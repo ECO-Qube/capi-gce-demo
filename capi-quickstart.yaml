@@ -80,7 +80,7 @@ metadata:
   namespace: default
 spec:
   clusterName: capi-quickstart
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels: null
   template:
