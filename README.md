@@ -5,7 +5,7 @@
 - Deploy 3 nodes with Cluster API on GKE
 - Deploy some dummy workload e.g. webserver
 
-## How to
+## Setting up Cluster API
 
 From https://cluster-api.sigs.k8s.io/user/quick-start.html
 
@@ -67,3 +67,29 @@ kubectl --kubeconfig=./capi-quickstart.kubeconfig \
 ```
 
 Check if worker nodes are running on GCP through `kubectl --kubeconfig=./capi-quickstart.kubeconfig get nodes` or the console.
+
+## Setting up OpenFaaS
+
+See: https://docs.openfaas.com/deployment/kubernetes/
+
+Retrieve and set workload cluster Kubeconfig:
+
+```
+clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
+export KUBECONFIG=$(pwd)/capi-quickstart.kubeconfig
+```
+
+Install OpenFaaS through their super nice tool:
+
+```
+arkade install openfaas
+arkade info openfaas
+```
+
+Port forward the gateway service
+
+```
+kubectl port-forward -n openfaas svc/gateway-external 31112:8080
+```
+
+Connect to `localhost:31112`
