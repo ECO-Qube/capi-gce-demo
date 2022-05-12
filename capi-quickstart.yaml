@@ -1,0 +1,124 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: capi-quickstart
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: capi-quickstart-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: GCPCluster
+    name: capi-quickstart
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPCluster
+metadata:
+  name: capi-quickstart
+  namespace: default
+spec:
+  network:
+    name: default
+  project: k8s-ecoqube-development
+  region: europe-west6
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: capi-quickstart-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: gce
+        timeoutForControlPlane: 20m
+      controllerManager:
+        extraArgs:
+          allocate-node-cidrs: "false"
+          cloud-provider: gce
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: gce
+        name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
+    joinConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: gce
+        name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: GCPMachineTemplate
+      name: capi-quickstart-control-plane
+  replicas: 1
+  version: v1.21.10
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPMachineTemplate
+metadata:
+  name: capi-quickstart-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      image: projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960
+      instanceType: n1-standard-2
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  clusterName: capi-quickstart
+  replicas: 1
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: capi-quickstart-md-0
+      clusterName: capi-quickstart
+      failureDomain: europe-west6-a
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: GCPMachineTemplate
+        name: capi-quickstart-md-0
+      version: v1.21.10
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPMachineTemplate
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      image: projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960
+      instanceType: n1-standard-2
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: gce
+          name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
