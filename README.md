@@ -30,11 +30,11 @@ export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
 export GCP_NODE_MACHINE_TYPE=n1-standard-2
 export GCP_NETWORK_NAME=default
 export CLUSTER_NAME="scheduling-dev-mgmt"
-export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-5abe3168f3ed.json"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json"
 export GCP_PROJECT_ID="k8s-ecoqube-development"
 
 export GCP_PROJECT="k8s-ecoqube-development"
-export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-5abe3168f3ed.json | base64 | tr -d '\n' )
+export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json | base64 | tr -d '\n' )
 export IMAGE_ID="projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960"
 
 ```
@@ -76,7 +76,7 @@ kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig \
   apply -f https://docs.projectcalico.org/v3.21/manifests/calico.yaml
 ```
 
-Check if worker nodes are running on GCP through `kubectl --kubeconfig=./capi-quickstart.kubeconfig get nodes` or the console.
+Check if worker nodes are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes` or the console.
 
 ### Deploy management cluster on GCP (production setup)
 
@@ -139,26 +139,26 @@ clusterctl generate cluster scheduling-dev-wkld \
 kubectl apply -f scheduling-dev-wkld.yaml
 ```
 
-You can go back to the previous steps and repeat them to 
+Allow up to 10 minutes to wait for `initialized` as explained before.
+Afterwards, install the CNI in the newly created workload cluster:
 
-WIP: Why the management cluster also has a worker node? LOoks needed though:
+```
+clusterctl get kubeconfig scheduling-dev-wkld > scheduling-dev-wkld.kubeconfig
+kubectl --kubeconfig=./scheduling-dev-wkld.kubeconfig \
+  apply -f https://docs.projectcalico.org/v3.21/manifests/calico.yaml
+```
 
-Note: It’s required to have at least one worker node to schedule Cluster API workloads (i.e. controllers). A cluster with a single control plane node won’t be sufficient due to the NoSchedule taint. If a worker node isn’t available, clusterctl init will timeout.
+Check that the two control planes are up and running
 
-From `move` docs
+```
+kubectl get kubeadmcontrolplane
+```
 
 ## Setting up OpenFaaS
 
 See: https://docs.openfaas.com/deployment/kubernetes/
 
-Retrieve and set workload cluster Kubeconfig:
-
-```
-clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
-export KUBECONFIG=$(pwd)/capi-quickstart.kubeconfig
-```
-
-Install OpenFaaS through their super nice tool:
+In the workload cluster, install OpenFaaS through their extra nice tool:
 
 ```
 arkade install openfaas
