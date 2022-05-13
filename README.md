@@ -1,8 +1,8 @@
-# capi-gke-demo
+# capi-gce-demo
 
 ## Goal
 
-- Deploy 3 nodes with Cluster API on GKE
+- Deploy 3 nodes with Cluster API on GCE
 - Deploy some dummy workload e.g. webserver
 
 ## Building the image
