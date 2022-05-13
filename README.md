@@ -30,14 +30,14 @@ export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
 export GCP_NODE_MACHINE_TYPE=n1-standard-2
 export GCP_NETWORK_NAME=default
 export CLUSTER_NAME="cluster-demo"
-export GOOGLE_APPLICATION_CREDENTIALS="<your key>"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-5abe3168f3ed.json"
 export GCP_PROJECT_ID="k8s-ecoqube-development"
 
 export GCP_PROJECT="k8s-ecoqube-development"
-export GCP_B64ENCODED_CREDENTIALS=$( cat <your key> | base64 | tr -d '\n' )
+export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-5abe3168f3ed.json | base64 | tr -d '\n' )
 export IMAGE_ID="projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960"
-```
 
+```
 Init local temporary bootstrap cluster
 
 ```
@@ -77,6 +77,15 @@ kubectl --kubeconfig=./capi-quickstart.kubeconfig \
 ```
 
 Check if worker nodes are running on GCP through `kubectl --kubeconfig=./capi-quickstart.kubeconfig get nodes` or the console.
+
+### Deploy management cluster on GCP
+
+To deploy the management cluster on GCP as well, it is necessary to:
+
+1. Set the new kubeconfig as context
+2. Rerun everything from the cluster init command, this way the workload cluster will be promoted to management cluster and a 
+new workload cluster will be created
+3. Now it is possible to erase the local cluster
 
 ## Setting up OpenFaaS
 
