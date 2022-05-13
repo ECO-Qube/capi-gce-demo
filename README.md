@@ -141,11 +141,11 @@ kubectl apply -f scheduling-dev-wkld.yaml
 
 You can go back to the previous steps and repeat them to 
 
-WIP: I think the management cluster needs to have less resources like
-the machine ones, as they are not needed and conceptually wrong to have like this.
-The management cluster also needs to not have the kubeadm control plane etc.
-because the management cluster should have it and handle the workload cluster
-(would be cool to have two separate commands for generating the resources...)
+WIP: Why the management cluster also has a worker node? LOoks needed though:
+
+Note: It’s required to have at least one worker node to schedule Cluster API workloads (i.e. controllers). A cluster with a single control plane node won’t be sufficient due to the NoSchedule taint. If a worker node isn’t available, clusterctl init will timeout.
+
+From `move` docs
 
 ## Setting up OpenFaaS
 
