@@ -127,6 +127,8 @@ Decomission the temporary cluster:
 kind delete cluster
 ```
 
+> Skip to [Setting up ArgoCD](Setting-up-ArgoCD) to deploy the workload cluster declaratively and in a GitOps friendly style.
+
 Create a workload cluster:
 
 ```
@@ -153,6 +155,54 @@ Check that the two control planes are up and running
 ```
 kubectl get kubeadmcontrolplane
 ```
+
+Clusters can be deleted by deleting `Cluster` resources.
+
+## Setting up ArgoCD
+
+From https://argocd-autopilot.readthedocs.io/en/stable/Getting-Started/
+
+For a simple deployment, `argocd-autopilot` was used. 
+
+[Create an Access Token](https://git.helio.dev/eco-qube/<your_repo>/-/settings/access_tokens) on GitLab.
+
+[Create a repository](https://git.helio.dev/projects/new?namespace_id=43#blank_project) on GitLab.
+
+In the management cluster:
+
+```
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+Install `argocd` using your preferred package manager.
+
+
+Check that the UI is working correctly:
+
+> TODO: Expose using Ingress or LoadBalancer as shown in the docs.
+
+```
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+
+Get the initial password:
+
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+```
+
+Login and update the password:
+
+```
+argocd login localhost:8080
+argocd account update-password
+```
+
+### Deploy workload cluster
+
+
+
 
 ## Setting up OpenFaaS
 
