@@ -1,11 +1,43 @@
-# capi-gce-demo
+# CAPI GCE Demo (development)
+
+## TOC
+
+- [CAPI GCE Demo (development)](#capi-gce-demo--development-)
+  * [TOC](#toc)
+  * [System architecture](#system-architecture)
+  * [Goal](#goal)
+  * [Support infrastructure](#support-infrastructure)
+    + [Building the image](#building-the-image)
+    + [Setting up Cluster API](#setting-up-cluster-api)
+      - [Deploy management cluster on GCP (production setup)](#deploy-management-cluster-on-gcp--production-setup-)
+    + [Setting up ArgoCD](#setting-up-argocd)
+    + [Logging](#logging)
+  * [Workload testing](#workload-testing)
+  * [Issues encountered](#issues-encountered)
+    + [SSH error while building the image](#ssh-error-while-building-the-image)
+    + [Secret data is nil](#secret-data-is-nil)
+  * [Footnotes](#footnotes)
+    + [Setting up OpenFaaS](#setting-up-openfaas)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+## System architecture
+
+![architecture_v1.png](https://git.helio.dev/eco-qube/doc/-/raw/main/drawio/platform-architecture-v1.png)
+
 
 ## Goal
 
 - Deploy 3 nodes with Cluster API on GCE
 - Deploy some dummy workload e.g. webserver
 
-## Building the image
+See also on Notion: 
+
+- [DevOps architecture](https://www.notion.so/helioag/DevOps-architecture-f871d3766f604a04ab42917cd4d73322)
+- [Workload testing](https://www.notion.so/helioag/Workload-testing-ad6ec3a70e4b4772b016bc8c6c125984)
+
+## Support infrastructure
+### Building the image
 
 GCP does not provide pre-built images for nodes unlike some other providers such
 as AWS. Therefore, follow this to build the image:
@@ -15,7 +47,7 @@ https://github.com/kubernetes-sigs/cluster-api-provider-gcp/blob/main/docs/book/
 Don't clean up router and nat otherwise it would not be possible to reach the
 VMs from the extern.
 
-## Setting up Cluster API
+### Setting up Cluster API
 
 From https://cluster-api.sigs.k8s.io/user/quick-start.html
 
@@ -78,7 +110,7 @@ kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig \
 
 Check if worker nodes are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes` or the console.
 
-### Deploy management cluster on GCP (production setup)
+#### Deploy management cluster on GCP (production setup)
 
 To deploy the management cluster on GCP as well (production setup), it is necessary to:
 
@@ -127,7 +159,8 @@ Decomission the temporary cluster:
 kind delete cluster
 ```
 
-> Skip to [Setting up ArgoCD](Setting-up-ArgoCD) to deploy the workload cluster declaratively and in a GitOps friendly style.
+> Don't apply the workload cluster directly when setting up ArgoCD, workload clusters will be managed mostly
+by ArgoCD. Jump directly to the next section for ArgoCD set up. 
 
 Create a workload cluster:
 
@@ -156,17 +189,7 @@ Check that the two control planes are up and running
 kubectl get kubeadmcontrolplane
 ```
 
-Clusters can be deleted by deleting `Cluster` resources.
-
-## Setting up ArgoCD
-
-From https://argocd-autopilot.readthedocs.io/en/stable/Getting-Started/
-
-For a simple deployment, `argocd-autopilot` was used. 
-
-[Create an Access Token](https://git.helio.dev/eco-qube/<your_repo>/-/settings/access_tokens) on GitLab.
-
-[Create a repository](https://git.helio.dev/projects/new?namespace_id=43#blank_project) on GitLab.
+### Setting up ArgoCD
 
 In the management cluster:
 
@@ -175,53 +198,87 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-Install `argocd` using your preferred package manager.
+Install ArgoCD using your preferred package manager.
 
-
-Check that the UI is working correctly:
-
-> TODO: Expose using Ingress or LoadBalancer as shown in the docs.
+Allow ArgoCD to be reachable from your machine:
 
 ```
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
-Get the initial password:
+Get ArgoCD credentials (username is `admin`) and login:
 
 ```
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-```
-
-Login and update the password:
-
-```
 argocd login localhost:8080
-argocd account update-password
 ```
 
-### Deploy workload cluster
+Create an Access Token (better if project-scoped) with all the rights and copy it.
 
-
-
-
-## Setting up OpenFaaS
-
-See: https://docs.openfaas.com/deployment/kubernetes/
-
-In the workload cluster, install OpenFaaS through their extra nice tool:
+Add the private repository (**currently not working due to `unexpected 302 status code` with our GitLab instance, so using a private one until fixed**):
 
 ```
-arkade install openfaas
-arkade info openfaas
+argocd repo add https://gitlab.com/eco-qube/capi-gce-demo-argocd.git --username <your_username> --password <your_access_token>
 ```
 
-Port forward the gateway service
+Clone the ArgoCD repository and `cd` in it: https://gitlab.com/eco-qube/capi-gce-demo-argocd.git
+
+
+Deploy the workload cluster through CAPI's resources by applying the `Application` resource in the management cluster:
 
 ```
-kubectl port-forward -n openfaas svc/gateway-external 31112:8080
+kubectl apply -f apps/scheduling-dev-wkld-app.yaml
 ```
 
-Connect to `localhost:31112`
+> [This little operator](https://github.com/a1tan/argocdsecretsynchronizer) might be useful for handling workload clusters automatically after creation with ArgoCD. Basically it replaces `argocd cluster add`. CNI installation could possibly be done automatically as well.
+
+Allow up to 10 minutes to wait for `initialized` as explained before.
+Afterwards, install the CNI in the newly created workload cluster:
+
+> I had a couple of times "initialized" not set to true but after installing CNI the cluster was working... if it's initialized EVEN after 10 minutes just install the CNI.
+
+```
+clusterctl get kubeconfig scheduling-dev-wkld > scheduling-dev-wkld.kubeconfig
+kubectl --kubeconfig=./scheduling-dev-wkld.kubeconfig \
+  apply -f https://docs.projectcalico.org/v3.21/manifests/calico.yaml
+```
+
+Check that the two control planes are up and running:
+
+```
+kubectl get kubeadmcontrolplane
+```
+
+To add the workload cluster to ArgoCD and deploy stuff there, first
+merge the two kubeconfigs:
+
+```
+KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
+export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
+```
+
+check that both clusters are now shown with kubectl:
+
+```
+kubectl config get-contexts -o name
+```
+
+Add the workload cluster to ArgoCD:
+
+```
+argocd cluster add scheduling-dev-mgmt-admin@scheduling-dev-mgmt
+```
+
+Now it is possible to check the server IP with `argocd cluster list` and set
+the corresponding URL in the `spec.destination.server` field of `Application` resources!
+
+### Logging
+
+TODO
+
+## Workload testing
+
+TODO
 
 ## Issues encountered
 
@@ -250,3 +307,23 @@ This is most likely correlated with **image versions**. The built image version
 need to be the same for management and workload clusters (maybe also bootstrap
 cluster, haven't checked but there is a config that can be used to create the
 kind cluster with a given version in this document). 
+
+## Footnotes
+### Setting up OpenFaaS
+
+> Note: might be outdated
+
+See: https://docs.openfaas.com/deployment/kubernetes/
+
+In the workload cluster, install OpenFaaS through their extra nice tool:
+
+```
+arkade install openfaas
+arkade info openfaas
+```
+
+Port forward the gateway service
+
+```
+kubectl port-forward -n openfaas svc/gateway-external 31112:8080
+```
