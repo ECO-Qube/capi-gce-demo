@@ -13,15 +13,18 @@
     + [Setting up ArgoCD](#setting-up-argocd)
     + [Logging](#logging)
   * [Workload testing](#workload-testing)
+    + [OpenFaaS](#openfaas)
   * [Issues encountered](#issues-encountered)
     + [SSH error while building the image](#ssh-error-while-building-the-image)
     + [Secret data is nil](#secret-data-is-nil)
     + [x509: certificate signed by unknown authority](#x509--certificate-signed-by-unknown-authority)
     + [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
   * [Footnotes](#footnotes)
-    + [Setting up OpenFaaS](#setting-up-openfaas)
+    + [Setting up OpenFaaS with Arkane](#setting-up-openfaas-with-arkane)
+    + [Project links](#project-links)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 ## System architecture
 
