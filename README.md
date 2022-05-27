@@ -279,7 +279,14 @@ the corresponding URL in the `spec.destination.server` field of `Application` re
 
 ### Logging
 
-TODO
+Apply the Applications in the `logging/` directory of the manifests repository. There are two applications
+because of this [issue](#Unable-to-sync-Prometheus-CRD-in-ArgoCD).
+
+Port-forward Grafana (in the workload cluster)
+
+```
+kubectl port-forward -n logging deployment/kube-prometheus-stack-grafana 3000
+```
 
 ## Workload testing
 
