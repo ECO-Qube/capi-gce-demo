@@ -16,6 +16,8 @@
   * [Issues encountered](#issues-encountered)
     + [SSH error while building the image](#ssh-error-while-building-the-image)
     + [Secret data is nil](#secret-data-is-nil)
+    + [x509: certificate signed by unknown authority](#x509--certificate-signed-by-unknown-authority)
+    + [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
   * [Footnotes](#footnotes)
     + [Setting up OpenFaaS](#setting-up-openfaas)
 
@@ -235,7 +237,10 @@ kubectl apply -f apps/scheduling-dev-wkld-app.yaml
 Allow up to 10 minutes to wait for `initialized` as explained before.
 Afterwards, install the CNI in the newly created workload cluster:
 
-> I had a couple of times "initialized" not set to true but after installing CNI the cluster was working... if it's initialized EVEN after 10 minutes just install the CNI.
+> I had a couple of times "initialized" not set to true but after installing CNI
+> the cluster was working... if it's not initialized EVEN after 10 minutes just
+> install the CNI. Be careful not to wait more than 20 minutes or
+> `Kubeadmcontolplane` will time out.
 
 ```
 clusterctl get kubeconfig scheduling-dev-wkld > scheduling-dev-wkld.kubeconfig
@@ -266,7 +271,7 @@ kubectl config get-contexts -o name
 Add the workload cluster to ArgoCD:
 
 ```
-argocd cluster add scheduling-dev-mgmt-admin@scheduling-dev-mgmt
+argocd cluster add scheduling-dev-wkld-admin@scheduling-dev-wkld
 ```
 
 Now it is possible to check the server IP with `argocd cluster list` and set
@@ -307,6 +312,25 @@ This is most likely correlated with **image versions**. The built image version
 need to be the same for management and workload clusters (maybe also bootstrap
 cluster, haven't checked but there is a config that can be used to create the
 kind cluster with a given version in this document). 
+
+
+### x509: certificate signed by unknown authority
+
+Regenerate the kubeconfig with `clusterctl get kubeconfig <cluster_name> > <cluster_name>.kubeconfig`
+
+
+### Unable to sync Prometheus CRD in ArgoCD
+
+At this time (27.05.22) there's an [open
+issue](https://github.com/prometheus-operator/prometheus-operator/issues/4439)
+about this. The reason is that a certain field is too long and therefore will
+generate an error in ArgoCD. To fix this, CRDs can be applied
+[separately](https://github.com/prometheus-operator/prometheus-operator/issues/4439#issuecomment-1030198014)
+with `Replace=True`. See the manifests repository to check this out. See also
+[how we handle this in Helio's
+infrastructure](https://git.helio.dev/helio/IaC/argocd/-/commit/193484292a1c1fc7a7ba1c2efece1a8f6138a12e)
+for a vendored chart.
+
 
 ## Footnotes
 ### Setting up OpenFaaS
