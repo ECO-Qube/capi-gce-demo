@@ -73,7 +73,6 @@ export GCP_PROJECT_ID="k8s-ecoqube-development"
 export GCP_PROJECT="k8s-ecoqube-development"
 export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json | base64 | tr -d '\n' )
 export IMAGE_ID="projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960"
-
 ```
 Init local temporary bootstrap cluster
 
@@ -284,13 +283,15 @@ the corresponding URL in the `spec.destination.server` field of `Application` re
 
 Apply the Applications related to `kube-prometheus-stack` from the manifests
 repository. There are two applications because of
-[this issue](#Unable-to-sync-Prometheus-CRD-in-ArgoCD).
+[this issue](#unable-to-sync-prometheus-crd-in-argocd).
 
 Port-forward Grafana (in the workload cluster)
 
 ```
 kubectl port-forward -n logging deployment/kube-prometheus-stack-grafana 3000
 ```
+
+Username is `admin` and password is ` 
 
 ## Workload testing
 
@@ -307,8 +308,8 @@ Apply the Applications related `openfaas` from the manifests repository.
 > To solve this I can only imagine either creating a chart wrapping the original
 > OpenFaaS chart and add a namespace resource to the installation, or vendor
 > the original chart and add a namespace resource. The simplest thing
-> done now is to designate `openfaas` as the namespace for the function, together
-> with the other resources of OpenFaas.
+> done now is to designate `openfaas` as the namespace for the function. As a downside
+> functions and infrastructural resources will be mixed in the same namespace.
 
 Port forward:
 
