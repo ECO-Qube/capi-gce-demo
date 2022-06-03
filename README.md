@@ -376,6 +376,20 @@ infrastructure](https://git.helio.dev/helio/IaC/argocd/-/commit/193484292a1c1fc7
 for a vendored chart.
 
 
+### Sync error in ArgoCD: the server could not find the requested resource
+
+Apparentely ArgoCD does not install the Application CRD in workload clusters.
+We have to apply the resource ourselves in the workload cluster:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/crds/application-crd.yaml
+```
+
+See also: https://github.com/IBM/sample-app-gitops/issues/6
+
+It might also complain that there is no namespace present, so still in the workload
+cluster you should create the namespace of the Application resources.
+
 ## Footnotes
 ### Setting up OpenFaaS with Arkane
 
