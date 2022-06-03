@@ -285,13 +285,19 @@ Apply the Applications related to `kube-prometheus-stack` from the manifests
 repository. There are two applications because of
 [this issue](#unable-to-sync-prometheus-crd-in-argocd).
 
+```
+kubectl apply -f apps/kube-prometheus-stack-crds.yaml 
+kubectl apply -f apps/kube-prometheus-stack.yaml 
+
+```
+
 Port-forward Grafana (in the workload cluster)
 
 ```
 kubectl port-forward -n logging deployment/kube-prometheus-stack-grafana 3000
 ```
 
-Username is `admin` and password is ` 
+Username is `admin` and password is `prom-operator`
 
 ## Workload testing
 
