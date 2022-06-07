@@ -2,26 +2,27 @@
 
 ## TOC
 
-- [CAPI GCE Demo (development)](#capi-gce-demo--development-)
-  * [TOC](#toc)
-  * [System architecture](#system-architecture)
-  * [Goal](#goal)
-  * [Support infrastructure](#support-infrastructure)
-    + [Building the image](#building-the-image)
-    + [Setting up Cluster API](#setting-up-cluster-api)
-      - [Deploy management cluster on GCP (production setup)](#deploy-management-cluster-on-gcp--production-setup-)
-    + [Setting up ArgoCD](#setting-up-argocd)
-    + [Logging](#logging)
-  * [Workload testing](#workload-testing)
-    + [OpenFaaS](#openfaas)
-  * [Issues encountered](#issues-encountered)
-    + [SSH error while building the image](#ssh-error-while-building-the-image)
-    + [Secret data is nil](#secret-data-is-nil)
-    + [x509: certificate signed by unknown authority](#x509--certificate-signed-by-unknown-authority)
-    + [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
-  * [Footnotes](#footnotes)
-    + [Setting up OpenFaaS with Arkane](#setting-up-openfaas-with-arkane)
-    + [Project links](#project-links)
+- [CAPI GCE Demo (development)](#capi-gce-demo-development)
+  - [TOC](#toc)
+  - [System architecture](#system-architecture)
+  - [Goal](#goal)
+  - [Support infrastructure](#support-infrastructure)
+    - [Building the image](#building-the-image)
+    - [Setting up Cluster API](#setting-up-cluster-api)
+      - [Deploy management cluster on GCP (production setup)](#deploy-management-cluster-on-gcp-production-setup)
+    - [Setting up ArgoCD](#setting-up-argocd)
+    - [Logging](#logging)
+  - [Workload testing](#workload-testing)
+    - [OpenFaaS](#openfaas)
+  - [Issues encountered](#issues-encountered)
+    - [SSH error while building the image](#ssh-error-while-building-the-image)
+    - [Secret data is nil](#secret-data-is-nil)
+    - [x509: certificate signed by unknown authority](#x509-certificate-signed-by-unknown-authority)
+    - [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
+    - [Sync error in ArgoCD: the server could not find the requested resource](#sync-error-in-argocd-the-server-could-not-find-the-requested-resource)
+  - [Footnotes](#footnotes)
+    - [Setting up OpenFaaS with Arkane](#setting-up-openfaas-with-arkane)
+    - [Project links](#project-links)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -328,7 +329,7 @@ Connect to `localhost:8090`
 Username is `admin`, password is retrieved like this:
 
 ```
-kubectl -n openfaas get secret basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode)
+kubectl -n openfaas get secret basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode
 ```
 
 Next tasks:
