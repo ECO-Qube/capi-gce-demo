@@ -278,7 +278,7 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-Install ArgoCD using your preferred package manager.
+Install ArgoCD CLI using your preferred package manager.
 
 Allow ArgoCD to be reachable from your machine:
 
@@ -296,6 +296,7 @@ argocd login localhost:8080
 Create an Access Token (better if project-scoped) with all the rights and copy it.
 
 Add the private repository (**currently not working due to `unexpected 302 status code` with our GitLab instance, so using a private one until fixed**):
+Note that Gitlab needs the `.git` suffix.
 
 ```
 argocd repo add https://gitlab.com/eco-qube/capi-gce-demo-argocd.git --username <your_username> --password <your_access_token>
