@@ -481,6 +481,14 @@ See the available images here:
 az vm image list --publisher cncf-upstream --offer capi --all -o table
 ```
 
+### ArgoCD never fully syncs KubeAdmControlPlane resource
+
+This is most likely due to Go parsing of Time types. When you specify
+a timeout like this `20m` Kubernetes will translate it to `20m0s`. ArgoCD
+does not know this about this step, so it will just try to match desired and actual 
+timeouts as if they were normal strings and not Time. 
+To solve this just set ``timeoutForControlPlane: 20m0s``.
+
 ## Footnotes
 ### Setting up OpenFaaS with Arkane
 
