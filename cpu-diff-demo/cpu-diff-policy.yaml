@@ -1,0 +1,21 @@
+apiVersion: telemetry.intel.com/v1alpha1
+kind: TASPolicy
+metadata:
+  name: cpu-diff-policy
+  namespace: default
+spec:
+  strategies:
+    deschedule:
+      rules:
+      - metricname: cpu_diff
+        operator: Equals
+        target: 0
+    dontschedule:
+      rules:
+      - metricname: cpu_diff
+        operator: LessThan
+        target: 0.3
+    scheduleonmetric:
+      rules:
+      - metricname: cpu_diff
+        operator: GreaterThan
