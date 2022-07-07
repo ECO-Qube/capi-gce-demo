@@ -8,13 +8,13 @@ spec:
     deschedule:
       rules:
       - metricname: cpu_diff
-        operator: Equals
+        operator: LessThan
         target: 0
     dontschedule:
       rules:
       - metricname: cpu_diff
         operator: LessThan
-        target: 0.3
+        target: 10
     scheduleonmetric:
       rules:
       - metricname: cpu_diff
