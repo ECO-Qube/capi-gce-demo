@@ -81,14 +81,14 @@
 
    With our health metric the file at /tmp/node-metrics/test.prom (inside the worknode) should look like:
 
-   ````node_health_metric 0````
+   ````node_cpu_diff 0````
 
    Any change in the value in the file will be read by the prometheus node exporter, and will propagate through the metrics pipeline and made accessible to TAS. 
 
    - To set the health metric on remote nodes we can use: 
 
      ```sh
-     echo 'node_health_metric ' <METRIC VALUE> | ssh <USER@NODE_NAME> -T "cat > /node-metrics/text.prom"
+     echo 'node_cpu_diff ' <METRIC VALUE> | ssh <USER@NODE_NAME> -T "cat > /node-metrics/text.prom"
      ```
 
      
@@ -106,9 +106,9 @@
    - Also you can log into the node and modify the file directly (which is what I am doing now, because the former two options aren't working for me)
 
    In order to be certain the raw metrics are available look at a specific endpoint output from the above command e.g.
-   ``kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/nodes/*/health_metric" | jq .``
+   ``kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/nodes/*/cpu_diff" | jq .``
 
-   Where "health_metric" is the specific metric looked at. The output should be a json object with names an metrics info for each node in the cluster.
+   Where "cpu_diff" is the specific metric looked at. The output should be a json object with names an metrics info for each node in the cluster.
 
 6. Create the secret for the scheduling extender and start it:
 
