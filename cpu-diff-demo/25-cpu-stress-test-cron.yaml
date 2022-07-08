@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: 25-cpu-stresstest-cron
 spec:
-  schedule: "*/1 * * * *" # every 3 minutes
+  schedule: "*/1 * * * *" # every minute
   jobTemplate:
     spec:
       template:
@@ -37,6 +37,6 @@ spec:
                 cpu: "250m"
                 telemetry/scheduling: "1"
           restartPolicy: Never
-      parallelism: 2
-      completions: 2
+      parallelism: 1
+      completions: 1
 #  concurrencyPolicy: Forbid
