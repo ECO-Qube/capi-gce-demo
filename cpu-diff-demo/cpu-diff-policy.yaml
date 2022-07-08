@@ -7,15 +7,15 @@ spec:
   strategies:
     deschedule:
       rules:
-      - metricname: cpu_diff
+      - metricname: diff
         operator: LessThan
         target: 0
     dontschedule:
       rules:
-      - metricname: cpu_diff
+      - metricname: diff
         operator: LessThan
         target: 10
     scheduleonmetric:
       rules:
-      - metricname: cpu_diff
+      - metricname: diff
         operator: GreaterThan

@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: 25-cpu-stresstest-cron
+spec:
+  schedule: "*/1 * * * *" # every 3 minutes
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: 25-cpu-stresstest-cron
+            telemetry-policy: cpu-diff-policy
+        spec:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: cpu-diff-policy
+                        operator: NotIn
+                        values:
+                          - violating
+          containers:
+          - name: 25-cpu-stresstest-cron
+            image: petarmaric/docker.cpu-stress-test
+            imagePullPolicy: IfNotPresent
+            env:
+              - name: MAX_CPU_CORES
+                value: "2"
+              - name: STRESS_SYSTEM_FOR
+                value: "5m"
+            resources:
+              requests:
+                cpu: "250m"
+              limits:
+                cpu: "250m"
+                telemetry/scheduling: "1"
+          restartPolicy: Never
+      parallelism: 2
+      completions: 2
+#  concurrencyPolicy: Forbid
