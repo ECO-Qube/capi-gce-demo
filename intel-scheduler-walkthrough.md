@@ -92,6 +92,7 @@
 
 
 2. Configure Scheduler
+
    The provided shell [script](https://github.com/intel/platform-aware-scheduling/blob/master/telemetry-aware-scheduling/deploy/extender-configuration/configure-scheduler.sh) which meant to config the scheduler cannot work on minikube cluster or the cluster created by Cluster API. Depending on the kubernetes version you are using, the way to config the cluster varies.
 
    > Additionally, if using Minikube, make sure to copy the `$HOME/.minikube/ca.crt` and `$HOME/.minikube/ca.key` file from your machine to the master node, put them to path `/etc/kubernetes/pki/ca.crt` and `/etc/kubernetes/pki/ca.key`, because originally minikube cluster doesn't have them in place. 
@@ -179,13 +180,13 @@
 
 5. Providing the metrics:
 
-   With our health metric the file at /tmp/node-metrics/test.prom (inside the worknode) should look like:
+   The file at /tmp/node-metrics/test.prom (inside the worknode) should look like:
 
    ````node_cpu_diff 0````
 
    Any change in the value in the file will be read by the prometheus node exporter, and will propagate through the metrics pipeline and made accessible to TAS. 
 
-   - To set the health metric on remote nodes we can use: 
+   - To set the health metric on remote nodes we can use: (usually doesn't work)
 
      ```sh
      echo 'node_cpu_diff ' <METRIC VALUE> | ssh <USER@NODE_NAME> -T "cat > /node-metrics/text.prom"
@@ -203,10 +204,10 @@
 
    - Also you can log into the node and modify the file directly (which is what I am doing now, because the former two options aren't working for me)
 
-   In order to be certain the raw metrics are available look at a specific endpoint output from the above command e.g.
+In order to be certain the raw metrics are available look at a specific endpoint output from the above command e.g.
    ``kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/nodes/*/cpu_diff" | jq .``
 
-   Where "cpu_diff" is the specific metric looked at. The output should be a json object with names an metrics info for each node in the cluster.
+Where "cpu_diff" is the specific metric looked at. The output should be a json object with names an metrics info for each node in the cluster.
 
 6. Create the secret for the scheduling extender and start it:
 
