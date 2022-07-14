@@ -14,7 +14,7 @@ spec:
       rules:
       - metricname: diff
         operator: LessThan
-        target: 10
+        target: 20
     scheduleonmetric:
       rules:
       - metricname: diff
