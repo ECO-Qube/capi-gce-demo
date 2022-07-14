@@ -77,7 +77,6 @@ data:
             resource: node
       name:
         matches: ^node_cpu_(.*)
-      # metricsQuery: node_cpu_diff - 100 * avg(rate(node_cpu_seconds_total{mode!="idle"}[1m])) by (instance, job)
       metricsQuery: node_cpu_diff - 100 + 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
     - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
       seriesFilters: []

@@ -1,11 +1,94 @@
 # Intel Scheduler Demo Walk Through
 
-1. Deploy a cluster with multiple nodes. If doing it locally, you can use minikube:
-   > Note that k3d will be more tricky because it doesn't run the kubernetes scheduler in a pod
-   
-   ```sh
-   minikube start --nodes 3 
-   ```
+1. Deploy a cluster with multiple nodes. 
+
+   - If doing it locally, you can use minikube:
+
+     > Note that k3d will be more tricky because it doesn't run the kubernetes scheduler in a pod
+
+     ```Sh
+     minikube start --nodes 3 
+     ```
+
+   - If using cluster API:
+
+     For creating a management cluster, you can follow the instruction in the [README.md](README.md). Once you have the it running, switch to that context and begin to create the worker cluster. To create a cluster with 3 nodes, **using k8s v1.21.10**, run:
+
+     ```Sh
+     clusterctl generate cluster scheduling-dev-test \                             
+       --kubernetes-version v1.21.10 \
+       --control-plane-machine-count=1 \
+       --worker-machine-count=3 \
+       > scheduling-dev-test.yaml
+     ```
+
+     You can also use another k8s server version. The next step will be modifying the generated `scheduling-dev-test.yaml` file to configure the scheduler. Depending on the version you are using, the following steps differ:
+
+     - for image version eariier than v1.22, add the following to the `KubeadmControlPlane.spec`:
+
+       ```Yaml
+       postKubeadmCommands:
+       - mkdir /etc/certs/
+       - cp /etc/kubernetes/pki/ca.key /etc/certs/client.key
+       - cp /etc/kubernetes/pki/ca.crt /etc/certs/client.crt
+       - sed -e "/    - kube-scheduler/a\\    - --policy-configmap=scheduler-extender-policy\n    - --policy-configmap-namespace=kube-system" /etc/kubernetes/manifests/kube-scheduler.yaml -i
+       - 'sed -e "/spec/a\\  dnsPolicy: ClusterFirstWithHostNet" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
+       - 'sed -e "/    volumeMounts:/a\\    - mountPath: /host/certs\n      name: certdir" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
+       - 'sed -e "/  volumes:/a\\  - hostPath:\n      path: /etc/certs\n    name: certdir" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
+       ```
+
+       ​
+
+     - for image version v1.22 and later, add the following to the `KubeadmControlPlane.spec`:
+
+       (not tested, may not work)
+
+       ```Yaml
+       files:
+       - path: /etc/kubernetes/scheduler-config.yaml
+         owner: "root:root"
+         permissions: "0644"
+         content: |
+           {
+             apiVersion: kubescheduler.config.k8s.io/v1beta2
+             kind: KubeSchedulerConfiguration
+             clientConnection:
+               kubeconfig: /etc/kubernetes/scheduler.conf
+             extenders:
+               - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
+                 prioritizeVerb: "scheduler/prioritize"
+                 filterVerb: "scheduler/filter"
+                 weight: 1
+                 enableHTTPS: true
+                 managedResources:
+                   - name: "telemetry/scheduling"
+                     ignoredByScheduler: true
+                 ignorable: true
+                 tlsConfig:
+                   insecure: false
+                   certFile: "/host/certs/client.crt"
+                   keyFile: "/host/certs/client.key"
+           }
+       postKubeadmCommands:
+       - mkdir /etc/certs/
+       - cp /etc/kubernetes/pki/ca.key /etc/certs/client.key
+       - cp /etc/kubernetes/pki/ca.crt /etc/certs/client.crt
+       - export MANIFEST_FILE=/etc/kubernetes/manifests/kube-scheduler.yaml
+       - export scheduler_config_destination_path=/etc/kubernetes/scheduler-config.yaml
+       - sed -e "/    - kube-scheduler/a\\    - --config=$scheduler_config_destination_path" "$MANIFEST_FILE" -i
+       - 'sed -e "/    volumeMounts:/a\\    - mountPath: /host/certs\n      name: certdir\n    - mountPath: $scheduler_config_destination_path\n      name: schedulerconfig\n      readOnly: true" "$MANIFEST_FILE" -i'
+       - 'sed -e "/  volumes:/a\\  - hostPath:\n      path: /etc/certs\n    name: certdir\n. - hostPath:\n      path: $scheduler_config_destination_path\n    name: schedulerconfig" "$MANIFEST_FILE" -i'
+       ```
+
+     ​
+
+     Then, deploy the cluster:
+
+     ```Sh
+     kubectl apply -f scheduling-dev-test.yaml
+     ```
+
+     ​
 
 
 2. Configure Scheduler
@@ -25,18 +108,37 @@
          ```
 
       - Then, on the masternode, run the following to configure the `kube-scheduler.yaml` file:
-      
-         ```
-         sed -e "/    - kube-scheduler/a\\
-         - --policy-configmap=scheduler-extender-policy\n    - --policy-configmap-namespace=kube-system" "/etc/kubernetes/manifests/kube-scheduler.yaml" -i
+
+         > You can skip this part if you are using Cluster API and have followed the instructions above.
+
+         ```Sh
+         mkdir /etc/certs/
+         cp /etc/kubernetes/pki/ca.key /etc/certs/client.key
+         cp /etc/kubernetes/pki/ca.crt /etc/certs/client.crt
+         export MANIFEST_FILE=/etc/kubernetes/manifests/kube-scheduler.yaml
+         sed -e "/    - kube-scheduler/a\\    - --policy-configmap=scheduler-extender-policy\n    - --policy-configmap-namespace=kube-system" "$MANIFEST_FILE" -i
+         sed -e "/spec/a\\  dnsPolicy: ClusterFirstWithHostNet" "$MANIFEST_FILE" -i
+         sed -e "/    volumeMounts:/a\\    - mountPath: /host/certs\n      name: certdir" "$MANIFEST_FILE" -i
+         sed -e "/  volumes:/a\\  - hostPath:\n      path: /etc/certs\n    name: certdir" "$MANIFEST_FILE" -i
          ```
 
+         ​
+
+
    - image version v1.22 and later
+
+      > You can ignore the three steps below if you are using Cluster API and have followed the instructions above.
+
       - First, replace "XVERSIONX" with "v1beta2" in the file `deploy/extender-configuration/scheduler-config.yaml`
+
       - Next, copy the `scheduler-config.yaml` file to the master node, put it to the expected path, say `/etc/kubernetes/scheduler-config.yaml`, we will use this path later
+
       - Finally, on the masternode, run the following to configure the `kube-scheduler.yaml` file:
 
          ```sh
+         mkdir /etc/certs/
+         cp /etc/kubernetes/pki/ca.key /etc/certs/client.key
+         cp /etc/kubernetes/pki/ca.crt /etc/certs/client.crt
          export MANIFEST_FILE=/etc/kubernetes/manifests/kube-scheduler.yaml
          export scheduler_config_destination_path=/etc/kubernetes/scheduler-config.yaml
          sed -e "/    - kube-scheduler/a\\
@@ -46,11 +148,10 @@
          sed -e "/  volumes:/a\\
          - hostPath:\n      path: $scheduler_config_destination_path\n    name: schedulerconfig" "$MANIFEST_FILE" -i
          ```
-   After modifying the `kube-scheduler.yaml` file, kubelet should detect the changes and update the scheduler automatically. However, sometimes have to delete the scheduler pod manually so that the modification can take effects.
+         After modifying the `kube-scheduler.yaml` file, kubelet should detect the changes and update the scheduler automatically. However, sometimes have to delete the scheduler pod manually so that the modification can take effects.
 
-   
 3. Install Node Exporter and Prometheus run:
-   
+
    ```sh
    cd telemetry-aware-scheduling
    kubectl create namespace monitoring
@@ -59,7 +160,6 @@
    helm install prometheus deploy/charts/prometheus_helm_chart/
    ```
 
-   
 
 4. Create the secret for the Prometheus adapter and install it:
 
@@ -91,7 +191,6 @@
      echo 'node_health_metric ' <METRIC VALUE> | ssh <USER@NODE_NAME> -T "cat > /node-metrics/text.prom"
      ```
 
-     
 
    - A shell script called [set-health](../deploy/health-metric-demo/set-health.sh) is in the [deploy/health-metric-demo](../deploy/health-metric-demo) folder. It takes two arguments, the first being USER@NODENAME and the second a number value to set the health metric. 
 
@@ -101,7 +200,6 @@
      ./deploy/health-metric-demo/set-health blue@myfirstnode 1
      ```
 
-     
 
    - Also you can log into the node and modify the file directly (which is what I am doing now, because the former two options aren't working for me)
 
@@ -118,7 +216,6 @@
    kubectl apply -f deploy/
    ```
 
-   
 
 7. Create the TASPolicy:
 
@@ -126,7 +223,6 @@
    kubectl apply -f deploy/health-metric-demo/health-policy.yaml 
    ```
 
-   
 
 8. Deploy a test workload:
 
