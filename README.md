@@ -269,6 +269,29 @@ Check that the two control planes are up and running
 kubectl get kubeadmcontrolplane
 ```
 
+### Setting up Cluster API on OpenStack
+
+Build image
+
+https://image-builder.sigs.k8s.io/capi/providers/openstack.html
+
+```
+docker run --name=ubuntu2004 -dit --privileged -v $(pwd)/openstack-images:/home ubuntu:focal
+docker exec -it ubuntu2004 /bin/bash
+apt update
+apt install qemu-kvm libvirt-daemon-system libvirt-clients virtinst cpu-checker libguestfs-tools libosinfo-bin git make python pip ansible unzip
+usermod -a -G kvm root
+chown root:kvm /dev/kvm
+```
+exit the container and reenter
+```
+cd /home
+git clone https://github.com/kubernetes-sigs/image-builder.git
+cd image-builder/images/capi
+make deps-qemu
+make build-qemu-ubuntu-2004
+```
+
 ### Setting up ArgoCD
 
 In the management cluster:
