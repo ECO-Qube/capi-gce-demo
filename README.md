@@ -1,28 +1,30 @@
 # CAPI GCE Demo (development)
 
 ## TOC
-
-- [CAPI GCE Demo (development)](#capi-gce-demo-development)
-  - [TOC](#toc)
-  - [System architecture](#system-architecture)
-  - [Goal](#goal)
-  - [Support infrastructure](#support-infrastructure)
-    - [Building the image](#building-the-image)
-    - [Setting up Cluster API](#setting-up-cluster-api)
-      - [Deploy management cluster on GCP (production setup)](#deploy-management-cluster-on-gcp-production-setup)
-    - [Setting up ArgoCD](#setting-up-argocd)
-    - [Logging](#logging)
-  - [Workload testing](#workload-testing)
-    - [OpenFaaS](#openfaas)
-  - [Issues encountered](#issues-encountered)
-    - [SSH error while building the image](#ssh-error-while-building-the-image)
-    - [Secret data is nil](#secret-data-is-nil)
-    - [x509: certificate signed by unknown authority](#x509-certificate-signed-by-unknown-authority)
-    - [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
-    - [Sync error in ArgoCD: the server could not find the requested resource](#sync-error-in-argocd-the-server-could-not-find-the-requested-resource)
-  - [Footnotes](#footnotes)
-    - [Setting up OpenFaaS with Arkane](#setting-up-openfaas-with-arkane)
-    - [Project links](#project-links)
+- [System architecture](#system-architecture)
+- [Goal](#goal)
+- [Support infrastructure](#support-infrastructure)
+  * [Building the image](#building-the-image)
+  * [Setting up CAPI on Azure](#setting-up-capi-on-azure)
+  * [Setting up Cluster API on GCP](#setting-up-cluster-api-on-gcp)
+    + [Deploy management cluster on GCP (production setup)](#deploy-management-cluster-on-gcp--production-setup-)
+  * [Setting up Cluster API on OpenStack](#setting-up-cluster-api-on-openstack)
+    + [Use `openstack` CLI tool](#use--openstack--cli-tool)
+  * [Setting up ArgoCD](#setting-up-argocd)
+  * [Logging](#logging)
+- [Workload testing](#workload-testing)
+  * [OpenFaaS](#openfaas)
+- [Issues encountered](#issues-encountered)
+  * [SSH error while building the image](#ssh-error-while-building-the-image)
+  * [Secret data is nil](#secret-data-is-nil)
+  * [x509: certificate signed by unknown authority](#x509--certificate-signed-by-unknown-authority)
+  * [Unable to sync Prometheus CRD in ArgoCD](#unable-to-sync-prometheus-crd-in-argocd)
+  * [Sync error in ArgoCD: the server could not find the requested resource](#sync-error-in-argocd--the-server-could-not-find-the-requested-resource)
+  * [Cannot find image on Azure](#cannot-find-image-on-azure)
+  * [ArgoCD never fully syncs KubeAdmControlPlane resource](#argocd-never-fully-syncs-kubeadmcontrolplane-resource)
+- [Footnotes](#footnotes)
+  * [Setting up OpenFaaS with Arkane](#setting-up-openfaas-with-arkane)
+  * [Project links](#project-links)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -286,7 +288,6 @@ chown root:kvm /dev/kvm
 exit the container and reenter
 
 ```bash
->>>>>>> 4afdbfc729faf7671239e10cf37e867a1fcf1da4
 cd /home
 git clone https://github.com/kubernetes-sigs/image-builder.git
 cd image-builder/images/capi
