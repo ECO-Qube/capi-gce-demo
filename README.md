@@ -37,7 +37,7 @@
 - Deploy 3 nodes with Cluster API on GCE
 - Deploy some dummy workload e.g. webserver
 
-See also on Notion: 
+See also on Notion:
 
 - [DevOps architecture](https://www.notion.so/helioag/DevOps-architecture-f871d3766f604a04ab42917cd4d73322)
 - [Workload testing](https://www.notion.so/helioag/Workload-testing-ad6ec3a70e4b4772b016bc8c6c125984)
@@ -240,7 +240,7 @@ kind delete cluster
 ```
 
 > Don't apply the workload cluster directly when setting up ArgoCD, workload clusters will be managed mostly
-by ArgoCD. Jump directly to the next section for ArgoCD set up. 
+by ArgoCD. Jump directly to the next section for ArgoCD set up.
 
 Create a workload cluster:
 
@@ -268,6 +268,69 @@ Check that the two control planes are up and running
 ```
 kubectl get kubeadmcontrolplane
 ```
+
+### Setting up Cluster API on OpenStack
+
+Build image
+
+https://image-builder.sigs.k8s.io/capi/providers/openstack.html
+
+```bash
+docker run --name=ubuntu2004 -dit --privileged -v $(pwd)/openstack-images:/home ubuntu:focal
+docker exec -it ubuntu2004 /bin/bash
+apt update
+apt install qemu-kvm libvirt-daemon-system libvirt-clients virtinst cpu-checker libguestfs-tools libosinfo-bin git make python pip ansible unzip
+usermod -a -G kvm root
+chown root:kvm /dev/kvm
+```
+exit the container and reenter
+```bash
+cd /home
+git clone https://github.com/kubernetes-sigs/image-builder.git
+cd image-builder/images/capi
+make deps-qemu
+make build-qemu-ubuntu-2004
+```
+
+then we need to set the environment variables for `clusterctl`. First log into the OpenStack installation
+e.g. `ssh sesame@192.168.10.153`. Copy `/etc/openstack/clouds.yaml` into your local machine and run the following: 
+
+```bash
+wget https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-openstack/master/templates/env.rc -O /tmp/env.rc
+source /tmp/env.rc <path/to/clouds.yaml> <cloud>
+```
+
+where cloud is for example `devstack`. The script will set some environment variables related to authentication.
+
+Apart from the script, set the following OpenStack environment variables:
+
+- Note that the DNS server can be obtained by looking at `/etc/resolv.conf`.
+- Note you can list the machine flavors with `openstack flavor list`.
+- Note the SSH pair can be created in the GUI or by running `openstack keypair create [--public-key <file> | --private-key <file>] <name>`.
+- If there is more than one external network, you must specify it otherwise it will be detected automatically.
+
+```bash
+# The list of nameservers for OpenStack Subnet being created.
+# Set this value when you need create a new network/subnet while the access through DNS is required.
+export OPENSTACK_DNS_NAMESERVERS=127.0.0.53
+# FailureDomain is the failure domain the machine will be created in.
+export OPENSTACK_FAILURE_DOMAIN=nova
+# The flavor reference for the flavor for your server instance.
+export OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR=m1.medium
+# The flavor reference for the flavor for your server instance.
+export OPENSTACK_NODE_MACHINE_FLAVOR=m1.medium
+# The name of the image to use for your server instance. If the RootVolume is specified, this will be ignored and use rootVolume directly.
+export OPENSTACK_IMAGE_NAME=ubuntu-2004-kube-v1.22.9
+# The SSH key pair name
+export OPENSTACK_SSH_KEY_NAME=cristiano
+# The external network, if more than one is present
+export OPENSTACK_EXTERNAL_NETWORK_ID=<external network ID>
+```
+
+#### Use `openstack` CLI tool
+
+Go to Horizon, top right on the navbar there is a button with your username. Download the 
+OpenStack RC File, then run `source <youruser-openrc.sh` and input the admin password.
 
 ### Setting up ArgoCD
 
@@ -382,9 +445,9 @@ Username is `admin` and password is `prom-operator`
 
 Apply the Applications related `openfaas` from the manifests repository.
 
-> One thing that is not clear yet is that its Helm chart deploys Prometheus and 
+> One thing that is not clear yet is that its Helm chart deploys Prometheus and
 > Alertmanager with lots of configuration, so making it work with the preexisting
-> `kube-prometheus-stack` is unclear at the moment. 
+> `kube-prometheus-stack` is unclear at the moment.
 
 > Another issue is that the Helm chart does not create the `openfaas-fn` namespace,
 > so there is a manual step before installing the chart that should be undertaken.
@@ -438,7 +501,7 @@ I0510 23:24:52.939668       1 gcpmachine_controller.go:243] controller/gcpmachin
 This is most likely correlated with **image versions**. The built image version
 need to be the same for management and workload clusters (maybe also bootstrap
 cluster, haven't checked but there is a config that can be used to create the
-kind cluster with a given version in this document). 
+kind cluster with a given version in this document).
 
 
 ### x509: certificate signed by unknown authority
@@ -475,7 +538,7 @@ cluster you should create the namespace of the Application resources.
 
 ### Cannot find image on Azure
 
-See the available images here: 
+See the available images here:
 
 ```
 az vm image list --publisher cncf-upstream --offer capi --all -o table
@@ -485,8 +548,8 @@ az vm image list --publisher cncf-upstream --offer capi --all -o table
 
 This is most likely due to Go parsing of Time types. When you specify
 a timeout like this `20m` Kubernetes will translate it to `20m0s`. ArgoCD
-does not know this about this step, so it will just try to match desired and actual 
-timeouts as if they were normal strings and not Time. 
+does not know this about this step, so it will just try to match desired and actual
+timeouts as if they were normal strings and not Time.
 To solve this just set ``timeoutForControlPlane: 20m0s``.
 
 ## Footnotes
