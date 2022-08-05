@@ -284,7 +284,9 @@ usermod -a -G kvm root
 chown root:kvm /dev/kvm
 ```
 exit the container and reenter
+
 ```bash
+>>>>>>> 4afdbfc729faf7671239e10cf37e867a1fcf1da4
 cd /home
 git clone https://github.com/kubernetes-sigs/image-builder.git
 cd image-builder/images/capi
