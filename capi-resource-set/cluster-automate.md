@@ -67,7 +67,7 @@ spec:
 
 This [file](capi-resource-set/cluster-resource-sets) contains everything we need for the TAS cluster. For further added components, this file also need to be updated.
 
-Besides, notice that the ClusterResourceSet will look for proper cluster by checking the Labels. Thus we need to tag the cluster with the same labels as described in the ClusterResourceSet definition:
+Besides, notice that the ClusterResourceSet will look for proper cluster by checking the Labels. Thus we need to tag the cluster with the same labels as described in the ClusterResourceSet definition.
 
 You can either do it imperatively once the cluster is created:
 
