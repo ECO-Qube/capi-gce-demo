@@ -48,7 +48,7 @@ If there are other k8s objects need to be add, just put them in the resource-ori
 
 ### Create ClusterResourceSet
 
-In order to make the mgmt cluster aware of how to apply the former k8s objects we need to create ClusterResourceSet to bind those objects with target cluster:
+In order to make the mgmt cluster aware of how to apply the k8s objects, we need to create ClusterResourceSet to bind those objects with target cluster:
 
 ```Yaml
 ---
