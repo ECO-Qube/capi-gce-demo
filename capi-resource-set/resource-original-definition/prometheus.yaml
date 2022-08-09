@@ -62,6 +62,10 @@ data:
           severity: slack
         annotations:
           summary: More than 2 cores are now in use.
+    - name: prometheus.recording.rules
+      rules:
+      - record: node_cpu_utilization
+        expr: 100 - 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
   prometheus.yml: |-
     global:
       scrape_interval: 5s
