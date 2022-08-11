@@ -15,28 +15,31 @@ data:
     \ namespace: monitoring\ndata:\n  prometheus.rules: |-\n    groups:\n    - name:
     demo alert\n      rules:\n      - alert: High CPU USAGE\n        expr: sum(node_load1)
     > 2\n        for: 10s\n        labels:\n          severity: slack\n        annotations:\n
-    \         summary: More than 2 cores are now in use.\n  prometheus.yml: |-\n    global:\n
-    \     scrape_interval: 5s\n      evaluation_interval: 5s\n    rule_files:\n      -
-    /etc/prometheus/prometheus.rules\n    alerting:\n      alertmanagers:\n      -
-    scheme: http\n        static_configs:\n        - targets:\n          - \"alertmanager.monitoring.svc:9093\"\n\n
-    \   scrape_configs:\n      - job_name: metrics-target-exporter\n        static_configs:\n
-    \         - targets:\n            - \"target-exporter.target-exporter.svc.cluster.local:2112\"\n
-    \     - job_name: 'kubernetes-apiservers'\n\n        kubernetes_sd_configs:\n
-    \       - role: endpoints\n        scheme: https\n\n        tls_config:\n          ca_file:
-    /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n        bearer_token_file:
-    /var/run/secrets/kubernetes.io/serviceaccount/token\n\n        relabel_configs:\n
-    \       - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name,
-    __meta_kubernetes_endpoint_port_name]\n          action: keep\n          regex:
-    default;kubernetes;https\n\n      - job_name: 'kubernetes-nodes'\n\n        scheme:
-    https\n\n        tls_config:\n          insecure_skip_verify: true\n          ca_file:
-    /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n        bearer_token_file:
-    /var/run/secrets/kubernetes.io/serviceaccount/token\n\n        kubernetes_sd_configs:\n
-    \       - role: node\n\n        relabel_configs:\n        - action: labelmap\n
-    \         regex: __meta_kubernetes_node_label_(.+)\n        - target_label: __address__\n
-    \         replacement: kubernetes.default.svc:443\n        - source_labels: [__meta_kubernetes_node_name]\n
-    \         regex: (.+)\n          target_label: __metrics_path__\n          replacement:
-    /api/v1/nodes/${1}/proxy/metrics\n        - source_labels: [__meta_kubernetes_node_name]\n
-    \         action: replace\n          target_label: node\n\n      - job_name: 'kubernetes-node-exporter'\n
+    \         summary: More than 2 cores are now in use.\n    - name: prometheus.recording.rules\n
+    \     rules:\n      - record: node_cpu_utilization\n        expr: 100 - 100 *
+    avg by (instance, job) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n  prometheus.yml:
+    |-\n    global:\n      scrape_interval: 5s\n      evaluation_interval: 5s\n    rule_files:\n
+    \     - /etc/prometheus/prometheus.rules\n    alerting:\n      alertmanagers:\n
+    \     - scheme: http\n        static_configs:\n        - targets:\n          -
+    \"alertmanager.monitoring.svc:9093\"\n\n    scrape_configs:\n      - job_name:
+    metrics-target-exporter\n        static_configs:\n          - targets:\n            -
+    \"target-exporter.target-exporter.svc.cluster.local:2112\"\n      - job_name:
+    'kubernetes-apiservers'\n\n        kubernetes_sd_configs:\n        - role: endpoints\n
+    \       scheme: https\n\n        tls_config:\n          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n
+    \       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token\n\n
+    \       relabel_configs:\n        - source_labels: [__meta_kubernetes_namespace,
+    __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]\n          action:
+    keep\n          regex: default;kubernetes;https\n\n      - job_name: 'kubernetes-nodes'\n\n
+    \       scheme: https\n\n        tls_config:\n          insecure_skip_verify:
+    true\n          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n
+    \       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token\n\n
+    \       kubernetes_sd_configs:\n        - role: node\n\n        relabel_configs:\n
+    \       - action: labelmap\n          regex: __meta_kubernetes_node_label_(.+)\n
+    \       - target_label: __address__\n          replacement: kubernetes.default.svc:443\n
+    \       - source_labels: [__meta_kubernetes_node_name]\n          regex: (.+)\n
+    \         target_label: __metrics_path__\n          replacement: /api/v1/nodes/${1}/proxy/metrics\n
+    \       - source_labels: [__meta_kubernetes_node_name]\n          action: replace\n
+    \         target_label: node\n\n      - job_name: 'kubernetes-node-exporter'\n
     \       tls_config:\n          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n
     \         insecure_skip_verify: true\n        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token\n
     \       scheme: https\n        kubernetes_sd_configs:\n        - role: node\n
