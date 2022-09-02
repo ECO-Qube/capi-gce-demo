@@ -4,6 +4,7 @@ metadata:
   name: scheduling-dev-wkld
   labels:
     cni: calico
+    scheduler: tas
 spec:
   clusterNetwork:
     pods:
@@ -118,6 +119,14 @@ metadata:
 spec:
   template:
     spec:
+      postKubeadmCommands:
+       - mkdir /etc/certs/
+       - cp /etc/kubernetes/pki/ca.key /etc/certs/client.key
+       - cp /etc/kubernetes/pki/ca.crt /etc/certs/client.crt
+       - sed -e "/    - kube-scheduler/a\\    - --policy-configmap=scheduler-extender-policy\n    - --policy-configmap-namespace=kube-system" /etc/kubernetes/manifests/kube-scheduler.yaml -i
+       - 'sed -e "/spec/a\\  dnsPolicy: ClusterFirstWithHostNet" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
+       - 'sed -e "/    volumeMounts:/a\\    - mountPath: /host/certs\n      name: certdir" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
+       - 'sed -e "/  volumes:/a\\  - hostPath:\n      path: /etc/certs\n    name: certdir" /etc/kubernetes/manifests/kube-scheduler.yaml -i'
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs:
@@ -2987,7 +2996,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  custom-metrics-apiserver.yaml: "---\nkind: Namespace\napiVersion: v1\nmetadata:\n
+  custom-metrics.yaml: "---\nkind: Namespace\napiVersion: v1\nmetadata:\n
     \ name: custom-metrics\n  labels:\n    name: custom-metrics\n---\n# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-auth-delegator-cluster-role-binding.yaml\napiVersion:
     rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding\nmetadata:\n  name: custom-metrics:system:auth-delegator\nroleRef:\n
     \ apiGroup: rbac.authorization.k8s.io\n  kind: ClusterRole\n  name: system:auth-delegator\nsubjects:\n-
@@ -3079,7 +3088,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  extender.yaml: "---\napiVersion: v1\nkind: Service\nmetadata:\n  name: tas-service\n
+  scheduler-extender.yaml: "---\napiVersion: v1\nkind: Service\nmetadata:\n  name: tas-service\n
     \ namespace: default\nspec:\n  selector:\n    app: tas\n  type: ClusterIP\n  ports:\n
     \   - port: 9001\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name:
     telemetry-aware-scheduling\n  namespace: default \n  labels:\n    app: tas\nspec:\n
@@ -3184,7 +3193,7 @@ metadata:
 spec:
   clusterSelector:
     matchLabels:
-      prometheus: install-via-helm-template
+      scheduler: tas
   resources:
     - kind: ConfigMap
       name: prometheus-configmap
@@ -3196,7 +3205,7 @@ metadata:
 spec:
   clusterSelector:
     matchLabels:
-      prometheus-node-exporter: install-via-helm-template
+      scheduler: tas
   resources:
     - kind: ConfigMap
       name: prometheus-node-exporter-configmap
@@ -3208,7 +3217,7 @@ metadata:
 spec:
   clusterSelector:
     matchLabels:
-      custom-metrics: install-via-helm-template
+      scheduler: tas
   resources:
     - kind: ConfigMap
       name: custom-metrics-configmap
@@ -3220,7 +3229,7 @@ metadata:
 spec:
   clusterSelector:
     matchLabels:
-      scheduler-extender: telemetry-aware-scheduling
+      scheduler: tas
   resources:
     - kind: ConfigMap
       name: scheduler-extender-configmap

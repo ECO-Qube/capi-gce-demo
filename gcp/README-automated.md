@@ -159,3 +159,5 @@ You can merge the two kubeconfigs for convenience when using tools like `kubie` 
 KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
 export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
 ```
+
+then you need to install the target-exporter service, see [repo](https://git.helio.dev/eco-qube/target-exporter).
