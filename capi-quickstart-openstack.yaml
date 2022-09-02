@@ -1,0 +1,197 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: capi-quickstart
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: capi-quickstart-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    name: capi-quickstart
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackCluster
+metadata:
+  name: capi-quickstart
+  namespace: default
+spec:
+  cloudName: devstack-admin
+  dnsNameservers:
+  - 127.0.0.53
+  externalNetworkId: 4efd71fa-6a5c-4395-a39e-446613e27ab7
+  identityRef:
+    kind: Secret
+    name: capi-quickstart-cloud-config
+  managedSecurityGroups: true
+  nodeCidr: 10.6.0.0/24
+  bastion:
+    enabled: true
+    instance:
+      flavor: ds4G
+      image: ubuntu-2004-kube-v1.22.9
+      sshKeyName: demo
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: capi-quickstart-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        extraVolumes:
+        - hostPath: /etc/kubernetes/cloud.conf
+          mountPath: /etc/kubernetes/cloud.conf
+          name: cloud
+          readOnly: true
+      controllerManager:
+        extraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        extraVolumes:
+        - hostPath: /etc/kubernetes/cloud.conf
+          mountPath: /etc/kubernetes/cloud.conf
+          name: cloud
+          readOnly: true
+        - hostPath: /etc/certs/cacert
+          mountPath: /etc/certs/cacert
+          name: cacerts
+          readOnly: true
+      imageRepository: k8s.gcr.io
+    files:
+    - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE5Mi4xNjguMTAuMTUzL2lkZW50aXR5CnVzZXJuYW1lPSJhZG1pbiIKcGFzc3dvcmQ9Im5vbW9yZXNlY3JldCIKdGVuYW50LW5hbWU9ImFkbWluIgpkb21haW4taWQ9ImRlZmF1bHQiCnJlZ2lvbj0iUmVnaW9uT25lIgo=
+      encoding: base64
+      owner: root
+      path: /etc/kubernetes/cloud.conf
+      permissions: "0600"
+    - content: Cg==
+      encoding: base64
+      owner: root
+      path: /etc/certs/cacert
+      permissions: "0600"
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        name: '{{ local_hostname }}'
+    joinConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        name: '{{ local_hostname }}'
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+      kind: OpenStackMachineTemplate
+      name: capi-quickstart-control-plane
+  replicas: 1
+  version: v1.22.9
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: capi-quickstart-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: devstack-admin
+      flavor: ds4G
+      identityRef:
+        kind: Secret
+        name: capi-quickstart-cloud-config
+      image: ubuntu-2004-kube-v1.22.9
+      sshKeyName: demo
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  clusterName: capi-quickstart
+  replicas: 1
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: capi-quickstart-md-0
+      clusterName: capi-quickstart
+      failureDomain: nova
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+        kind: OpenStackMachineTemplate
+        name: capi-quickstart-md-0
+      version: v1.22.9
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: devstack-admin
+      flavor: ds4G
+      identityRef:
+        kind: Secret
+        name: capi-quickstart-cloud-config
+      image: ubuntu-2004-kube-v1.22.9
+      sshKeyName: demo
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: capi-quickstart-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      files:
+      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE5Mi4xNjguMTAuMTUzL2lkZW50aXR5CnVzZXJuYW1lPSJhZG1pbiIKcGFzc3dvcmQ9Im5vbW9yZXNlY3JldCIKdGVuYW50LW5hbWU9ImFkbWluIgpkb21haW4taWQ9ImRlZmF1bHQiCnJlZ2lvbj0iUmVnaW9uT25lIgo=
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/cloud.conf
+        permissions: "0600"
+      - content: Cg==
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-config: /etc/kubernetes/cloud.conf
+            cloud-provider: openstack
+          name: '{{ local_hostname }}'
+---
+apiVersion: v1
+data:
+  cacert: Cg==
+  clouds.yaml: Y2xvdWRzOgogIGRldnN0YWNrLWFkbWluOgogICAgYXV0aDoKICAgICAgYXV0aF91cmw6IGh0dHA6Ly8xOTIuMTY4LjEwLjE1My9pZGVudGl0eQogICAgICBwYXNzd29yZDogbm9tb3Jlc2VjcmV0CiAgICAgIHByb2plY3RfZG9tYWluX2lkOiBkZWZhdWx0CiAgICAgIHByb2plY3RfbmFtZTogYWRtaW4KICAgICAgdXNlcl9kb21haW5faWQ6IGRlZmF1bHQKICAgICAgdXNlcm5hbWU6IGFkbWluCiAgICBpZGVudGl0eV9hcGlfdmVyc2lvbjogJzMnCiAgICByZWdpb25fbmFtZTogUmVnaW9uT25lCiAgICB2b2x1bWVfYXBpX3ZlcnNpb246ICczJwo=
+kind: Secret
+metadata:
+  labels:
+    clusterctl.cluster.x-k8s.io/move: "true"
+  name: capi-quickstart-cloud-config
+  namespace: default

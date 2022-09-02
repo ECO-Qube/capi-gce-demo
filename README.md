@@ -318,8 +318,8 @@ Apart from the script, set the following OpenStack environment variables:
 # Set this value when you need create a new network/subnet while the access through DNS is required.
 export OPENSTACK_DNS_NAMESERVERS=127.0.0.53
 export OPENSTACK_FAILURE_DOMAIN=nova
-export OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR=ds2G
-export OPENSTACK_NODE_MACHINE_FLAVOR=ds2G
+export OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR=ds4G
+export OPENSTACK_NODE_MACHINE_FLAVOR=ds4G
 export OPENSTACK_IMAGE_NAME=ubuntu-2004-kube-v1.22.9
 export OPENSTACK_SSH_KEY_NAME=demo
 export OPENSTACK_EXTERNAL_NETWORK_ID=4efd71fa-6a5c-4395-a39e-446613e27ab7
