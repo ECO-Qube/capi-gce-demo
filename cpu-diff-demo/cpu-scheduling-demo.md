@@ -22,17 +22,3 @@ as described in the [walk through](intel-scheduler-walkthrough.md), but remember
 
 - using the provided policy and the provided [deployment](cpu-diff-demo/cpu-deployment.yaml)
   /[cronjob](cpu-diff-demo/25-cpu-stress-test-cron.yaml) to deploy dummy workloads
-
-## Troubleshooting
-
-![img.png](intel-tas-architecture-diag.png)
-
-Checklist:
-
-- [ ] Is kube-scheduler aware of the extender (see `postKubeadmCommands` configuration)? Are all ConfigMaps and TLS
-  certificates correctly configured? 
-- [ ] The custom metrics API server is running correctly?
-- [ ] Is the telemetry aware scheduler pod running correctly?
-- [ ] Is Prometheus deployed? Scraping the necessary metrics?
-- [ ] If using built-in metrics from node exporter, is it running on the nodes?
-- [ ] Is the TASPolicy resource correctly configured
