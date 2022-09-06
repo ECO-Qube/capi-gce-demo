@@ -50,7 +50,7 @@ clusterctl generate cluster scheduling-dev-mgmt \
   > scheduling-dev-mgmt.yaml
 ```
 
-Add ConfigMap and the relative ClusterResourceSet resources to install the CNI automatically.
+Next, add Calico's ConfigMap and the relative ClusterResourceSet resource to install the CNI automatically.
 
 Apply config
 
@@ -58,17 +58,18 @@ Apply config
 kubectl apply -f scheduling-dev-mgmt.yaml
 ```
 
-Wait until the control plane is up and running using the following (INITIALIZED API SERVER and AVAILABLE must be true,
-wait up to 10 minutes)
+Wait until the control plane is up and running using the following command:
 
 ```watch -n 1 kubectl get kubeadmcontrolplane```, then get kubeconfig:
+
+Note that both INITIALIZED API SERVER and AVAILABLE must be true. Wait up to 10 minutes. Check also that worker nodes
+are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes`.
+
+Next, get the cluster's kubeconfig:
 
 ```
 clusterctl get kubeconfig scheduling-dev-mgmt > scheduling-dev-mgmt.kubeconfig
 ```
-
-Check if worker nodes are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes` or
-the console.
 
 #### Deploy management cluster on GCP (production setup)
 
@@ -86,6 +87,10 @@ To deploy the management cluster on GCP as well (production setup), it is necess
 Here are the steps:
 
 Make sure your selected kubeconfig is the one of the **bootstrap** cluster (should be `kind-kind` and already selected).
+Note this can be a bit confusing: at this time, the cluster is named scheduling-dev-**mgmt** but until we run the
+`clusterctl init` command, it's still technically a workload cluster (where the management one is our local `kind`
+cluster). To promote the workload cluster on GCP to a management cluster and get rid of the local `kind` cluster,
+see the following:
 
 Prepare the cluster to become a management cluster by running:
 
@@ -136,7 +141,6 @@ and automatically provision CNI and Scheduler at cluster initialization.
 Finally, apply the config:
 
 ```
-export KUBECONFIG=$(pwd)/scheduling-dev-mgmt.kubeconfig
 kubectl apply -f scheduling-dev-wkld.yaml
 ```
 
@@ -160,4 +164,15 @@ KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubec
 export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
 ```
 
-then you need to install the target-exporter service, see [repo](https://git.helio.dev/eco-qube/target-exporter).
+### Setting up the custom metrics pipeline
+
+> Note: would be good to automate this by having CAPI install ArgoCD and let it automatically 
+> provision all the ZHM services and metric endpoints by syncing to a preconfigured repository. 
+
+> Note: the scheduler is already configured together with the scraping config for the target-exporter
+> service and the formula to 
+
+Install the target-exporter service, see [repo](https://git.helio.dev/eco-qube/target-exporter).
+
+Install the TASPolicy manifest.
+
