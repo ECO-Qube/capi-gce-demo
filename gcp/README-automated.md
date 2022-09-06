@@ -179,7 +179,7 @@ what's going on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
 
 ## Troubleshooting
 
-![img.png](intel-tas-architecture-diag.png)
+![intel-tas-architecture-diag.png](intel-tas-architecture-diag.png)
 
 Checklist:
 
