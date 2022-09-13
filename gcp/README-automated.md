@@ -1,24 +1,76 @@
+### Prerequisites
+
+You need an image on GCP, at least v1.22.
+
+Set the following environment variables:
+
+```bash
+export CLUSTER_NAME="scheduling-dev"
+export GCP_PROJECT="k8s-ecoqube-development"
+# Make sure to use same kubernetes version here as building the GCE image
+export KUBERNETES_VERSION=1.22.9
+export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
+export GCP_NODE_MACHINE_TYPE=n1-standard-2
+export GCP_NETWORK_NAME=default
+export GCP_PROJECT_ID="k8s-ecoqube-development"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json"
+```
+
+Clone the repository
+
+```bash
+git clone https://github.com/kubernetes-sigs/image-builder.git image-builder
+```
+
+Use the Docker image present under `images/capi`:
+
+```bash
+cd image-builder/images/capi
+docker build -t image-builder .
+docker run -it --entrypoint /bin/bash image-builder
+```
+
+You can modify the build configuration by modifying the file under `images/capi/packer/gce`, for example if you are
+building an ubuntu 2004 image, modify file `ubuntu-2004.json`, e.g.
+
+```json
+{
+  "build_name": "ubuntu-2004",
+  "distribution_release": "focal",
+  "distribution_version": "2004",
+  "zone": "europe-west6",
+  "kubernetes_deb_version": "1.25.0-00",
+  "kubernetes_rpm_version": "1.25.0-0",
+  "kubernetes_semver": "v1.25.0",
+  "kubernetes_series": "v1.25"
+}
+```
+
+you can find the full list of variables [here](https://image-builder.sigs.k8s.io/capi/capi.html#customization).
+
+For the rest of the guide, you can follow
+the [documentation](https://github.com/kubernetes-sigs/cluster-api-provider-gcp/blob/main/docs/book/src/topics/prerequisites.md).
+
 ### Setting up Cluster API on GCP
 
 From https://cluster-api.sigs.k8s.io/user/quick-start.html
 
 Environment variables to set
 
-```
+```bash
 export GCP_REGION="europe-west6"
 export GCP_PROJECT="k8s-ecoqube-development"
-# Make sure to use same kubernetes version here as building the GCE image
-export KUBERNETES_VERSION=1.21.10
+# Make sure to use same Kubernetes version here as the previously built GCE image
+export KUBERNETES_VERSION=1.25.0
 export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
 export GCP_NODE_MACHINE_TYPE=n1-standard-2
 export GCP_NETWORK_NAME=default
 export CLUSTER_NAME="scheduling-dev-mgmt"
 export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json"
 export GCP_PROJECT_ID="k8s-ecoqube-development"
-
 export GCP_PROJECT="k8s-ecoqube-development"
 export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json | base64 | tr -d '\n' )
-export IMAGE_ID="projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-1804-v1-21-10-1652204960"
+export IMAGE_ID=projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-2004-v1-25-0-1662644962
 
 # Enable ClusterResourceSet experimental feature
 export EXP_CLUSTER_RESOURCE_SET=true
@@ -37,7 +89,7 @@ Provision temporary management cluster
 clusterctl init --infrastructure gcp
 ```
 
-Generate Cluster API config (only for doc purposes, see below note)
+Generate Cluster API config (only for documentation purposes, see below note)
 
 > Note: the definitions are already created and present in a single file `scheduling-dev-mgmt.yaml`, please use this one
 > instead of generating the resources yourself.
@@ -62,7 +114,7 @@ Wait until the control plane is up and running using the following command:
 
 ```watch -n 1 kubectl get kubeadmcontrolplane```, then get kubeconfig:
 
-Note that both INITIALIZED API SERVER and AVAILABLE must be true. Wait up to 10 minutes. Check also that worker nodes
+Note that both INITIALIZED API SERVER and API SERVER AVAILABLE must be true. Wait up to 10 minutes. Check also that worker nodes
 are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes`.
 
 Next, get the cluster's kubeconfig:
@@ -89,8 +141,8 @@ Here are the steps:
 Make sure your selected kubeconfig is the one of the **bootstrap** cluster (should be `kind-kind` and already selected).
 Note this can be a bit confusing: at this time, the cluster is named scheduling-dev-**mgmt** but until we run the
 `clusterctl init` command, it's still technically a workload cluster (where the management one is our local `kind`
-cluster). To promote the workload cluster on GCP to a management cluster and get rid of the local `kind` cluster,
-see the following:
+cluster). To promote the workload cluster on GCP to a management cluster and get rid of the local `kind` cluster, see
+the following:
 
 Prepare the cluster to become a management cluster by running:
 
@@ -160,22 +212,22 @@ kubectl get kubeadmcontrolplane
 You can merge the two kubeconfigs for convenience when using tools like `kubie` or `kubectx`
 
 ```
-KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
-export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
+`KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
+`export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
 ```
 
 ### Setting up the custom metrics pipeline
 
-> Note: would be good to automate this by having CAPI install ArgoCD and let it automatically 
-> provision all the ZHM services and metric endpoints by syncing to a preconfigured repository. 
+> Note: would be good to automate this by having CAPI install ArgoCD and let it automatically
+> provision all the ZHM services and metric endpoints by syncing to a preconfigured repository.
 
 > Note: the scheduler is already configured together with the scraping config for the target-exporter
-> service and the formula to 
+> service and the formula to
 
 Install the target-exporter service, see [repo](https://git.helio.dev/eco-qube/target-exporter).
 
-Install the TASPolicy manifest. You can inspect its controller's logs to see
-what's going on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
+Install the TASPolicy manifest. You can inspect its controller's logs to see what's going
+on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
 
 ## Troubleshooting
 
