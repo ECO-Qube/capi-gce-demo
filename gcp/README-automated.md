@@ -237,6 +237,7 @@ Checklist:
 
 - [ ] Is kube-scheduler aware of the extender (see `postKubeadmCommands` configuration)? Are all ConfigMaps and TLS
   certificates correctly configured?
+- [ ] Is kube-scheduler able to list/get/watch all the necessary resources like ConfigMaps?
 - [ ] The custom metrics API server is running correctly?
 - [ ] Are the custom metrics available on each node (try
   with `kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/nodes/...`)?
