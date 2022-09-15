@@ -212,8 +212,8 @@ kubectl get kubeadmcontrolplane
 You can merge the two kubeconfigs for convenience when using tools like `kubie` or `kubectx`
 
 ```
-`KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
-`export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
+KUBECONFIG=./scheduling-dev-mgmt.kubeconfig:scheduling-dev-wkld.kubeconfig kubectl config view --flatten > scheduling-dev.kubeconfig
+export KUBECONFIG=$(pwd)/scheduling-dev.kubeconfig
 ```
 
 ### Setting up the custom metrics pipeline
