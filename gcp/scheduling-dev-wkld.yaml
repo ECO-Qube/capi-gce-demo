@@ -58,6 +58,15 @@ spec:
                 insecure: false
                 certFile: "/host/certs/client.crt"
                 keyFile: "/host/certs/client.key"
+      - path: /tmp/kubeadm/patches/kube-scheduler+json.json
+        content: |-
+          [
+              {
+                  "op": "add",
+                  "path": "/spec/dnsPolicy",
+                  "value": "ClusterFirstWithHostNet"
+              }
+          ]
     clusterConfiguration:
       apiServer:
         extraArgs:
@@ -81,11 +90,15 @@ spec:
             mountPath: "/host/certs/client.crt"
             name: clientcert
     initConfiguration:
+      patches:
+        directory: /tmp/kubeadm/patches
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: gce
         name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
     joinConfiguration:
+      patches:
+        directory: /tmp/kubeadm/patches
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: gce
