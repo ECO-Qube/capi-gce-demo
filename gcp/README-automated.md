@@ -1,3 +1,5 @@
+## Setting up Cluster API on GCP -- with TAS automatically installed
+
 ### Prerequisites
 
 You need an image on GCP, at least v1.22.
