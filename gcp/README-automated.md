@@ -243,7 +243,7 @@ Checklist:
   with `kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/nodes/...`)?
 - [ ] Is the telemetry aware scheduler pod running correctly?
 - [ ] If using metrics from node exporter, is it running on the nodes? Prometheus is scraping those correctly?
-- [ ] Is Prometheus correctly deployed? Scraping the necessary metrics?
+- [ ] Is Prometheus correctly deployed? Scraping the necessary metrics and targets?
 - [ ] Is the Prometheus adapter correctly configured (resource overrides? name matches? metricsQuery?)?
 - [ ] Is the TASPolicy resource correctly configured?
 - [ ] Is the Pod correctly configured (policy name in the labels? nodeAffinity? telemetry/scheduling: "1" in the limits
