@@ -88,8 +88,6 @@ metadata:
 
 In ECO-Qube project we use Argo-CD. After change the cluster's manifest, it only take effects after delete and regenerate the current cluster.
 
-
-
 ### Last Step
 
 Apply all the configmaps and the ClusterResourceSet to our mgmt cluster. It will take effect the next time when provisioning the target worker cluster.
