@@ -53,7 +53,7 @@ Go to [link](azure/README.md).
 
 ### Setting up CAPI on GCP
 
-Go to [link](gcp/README-automated.md).
+Go to [link](gcp/README.md).
 
 ### Setting up CAPI on OpenStack
 
