@@ -235,7 +235,7 @@ on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
 
 ![intel-tas-architecture-diag.png](intel-tas-architecture-diag.png)
 
-Checklist:
+### Checklist:
 
 - [ ] Is kube-scheduler aware of the extender (see `postKubeadmCommands` configuration)? Are all ConfigMaps and TLS
   certificates correctly configured?

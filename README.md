@@ -49,7 +49,7 @@ See also on Notion:
 
 ### Setting up CAPI on Azure
 
-Go to [link](azure/README.md)
+Go to [link](azure/README.md).
 
 ### Setting up CAPI on GCP
 
@@ -57,7 +57,7 @@ Go to [link](gcp/README-automated.md).
 
 ### Setting up CAPI on OpenStack
 
-Go to [link](openstack/README.md)
+Go to [link](openstack/README.md).
 
 ### Setting up ArgoCD
 

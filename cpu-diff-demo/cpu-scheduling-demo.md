@@ -1,3 +1,5 @@
+# CPU Scheduling Demo
+
 Create the cluster and configure the scheduler, install the custom metrics pipeline(prometheus, adapter, node exporter),
 as described in the [walk through](intel-scheduler-walkthrough.md), but remember to change:
 
@@ -17,8 +19,6 @@ as described in the [walk through](intel-scheduler-walkthrough.md), but remember
       matches: ^node_cpu_(.*)
     metricsQuery: node_cpu_diff - 100 + 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
   ```
-
-  ​
 
 - using the provided policy and the provided [deployment](cpu-diff-demo/cpu-deployment.yaml)
   /[cronjob](cpu-diff-demo/25-cpu-stress-test-cron.yaml) to deploy dummy workloads
