@@ -1,4 +1,3 @@
----
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -255,8 +254,6 @@ metadata:
       prometheus.io/scrape: 'true'
       prometheus.io/path:   /metrics
       prometheus.io/port:   '9090'
-
-
 spec:
   ports:
   - port: 9090 
