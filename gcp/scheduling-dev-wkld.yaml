@@ -171,7 +171,7 @@ spec:
           kubeletExtraArgs:
             cloud-provider: gce
           name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
----
+--- # ConfigMaps for CRS
 apiVersion: v1
 data:
   prometheus.yaml: "---\nkind: Namespace\napiVersion: v1\nmetadata:\n  name: monitoring\n
@@ -479,34 +479,7 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: scheduler-extender-configmap
----
-apiVersion: v1
-data:
-  scheduler-componentconfig.yaml: |
-    apiVersion: kubescheduler.config.k8s.io/v1beta2
-    kind: KubeSchedulerConfiguration
-    clientConnection:
-      kubeconfig: /etc/kubernetes/scheduler.conf
-    extenders:
-      - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
-        prioritizeVerb: "scheduler/prioritize"
-        filterVerb: "scheduler/filter"
-        weight: 1
-        enableHTTPS: true
-        managedResources:
-          - name: "telemetry/scheduling"
-            ignoredByScheduler: true
-        ignorable: true
-        tlsConfig:
-          insecure: false
-          certFile: "/host/certs/client.crt"
-          keyFile: "/host/certs/client.key"
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: scheduler-componentconfig-configmap
 --- # ClusterResourceSets
----
 apiVersion: addons.cluster.x-k8s.io/v1alpha3
 kind: ClusterResourceSet
 metadata:
@@ -554,15 +527,3 @@ spec:
   resources:
     - kind: ConfigMap
       name: scheduler-extender-configmap
----
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
-kind: ClusterResourceSet
-metadata:
-  name: scheduler-componentconfig
-spec:
-  clusterSelector:
-    matchLabels:
-      scheduler: tas
-  resources:
-    - kind: ConfigMap
-      name: scheduler-componentconfig-configmap
