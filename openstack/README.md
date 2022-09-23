@@ -1,8 +1,10 @@
-### Setting up Cluster API on OpenStack
+# Setting up Cluster API on OpenStack
 
 Build image
 
 https://image-builder.sigs.k8s.io/capi/providers/openstack.html
+
+> NOTE you need CPU virtualization enabled in your BIOS settings. Verify with `kvm-ok` if in doubt.
 
 ```bash
 docker run --name=ubuntu2004 -dit --privileged -v $(pwd)/openstack-images:/home ubuntu:focal
@@ -25,7 +27,7 @@ make build-qemu-ubuntu-2004
 then we need to set the environment variables for `clusterctl`. First log into the OpenStack installation
 e.g. `ssh sesame@192.168.10.153`. Copy `/etc/openstack/clouds.yaml` into your local machine and run the following:
 
-Note you can also download the `clouds.yaml` file from the GUI `API access > Download OpenStack RC File > OpenStack clouds.yaml file`
+> Note you can also download the `clouds.yaml` file from the GUI `API access > Download OpenStack RC File > OpenStack clouds.yaml file`
 
 ```bash
 wget https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-openstack/master/templates/env.rc -O /tmp/env.rc
