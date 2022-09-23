@@ -1,2 +1,4 @@
 .idea/
 ubuntu-2004-kube-v1.25.0
+*-openrc.sh
+clouds.yaml
