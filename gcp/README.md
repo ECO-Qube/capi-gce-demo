@@ -252,3 +252,9 @@ on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
   field?)
 - [ ] If you changed something for the custom-metrics API or Prometheus, did you scale them down to 0 and then back to 1
   to force a restart?
+
+### Some useful commands
+Restart the custom-metrics pod
+```bash
+kubectl scale deployment --replicas=0 -n custom-metrics custom-metrics-apiserver && kubectl scale deployment --replicas=1 -n custom-metrics custom-metrics-apiserver
+```

@@ -68,16 +68,24 @@ data:
     \     metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)\n
     \   - seriesQuery: '{__name__=~\"^node_.*\"}'\n      resources:\n        overrides:\n
     \         instance:\n            resource: node\n      name:\n        matches:
-    ^node_(.*)\n      metricsQuery: <<.Series>>\n    - seriesQuery: '{__name__=\"cpu_diff_target\"}'\n
+    ^node_(.*)\n      metricsQuery: <<.Series>>\n    - seriesQuery: '{namespace!=\"\",__name__!~\"^container_.*\"}'\n
+    \     seriesFilters: []\n      resources:\n        template: <<.Resource>>\n      name:\n
+    \       matches: ^(.*)_seconds_total$\n        as: \"\"\n      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}[1m])
+    by (<<.GroupBy>>)\n    # Fake energy consumption (based on CPU and fake coefficient)\n
+    \   - seriesQuery: '{__name__=\"node_cpu_seconds_total\"}'\n      resources:\n
+    \       overrides:\n          instance:\n            resource: node\n      name:\n
+    \       matches: '.*'\n        as: \"node_fake_energy_consumption\"\n      metricsQuery:
+    1000 + ((100 - 100 * (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))))
+    * 100)\n    # Fake energy target (from target-exporter service)\n    - seriesQuery:
+    '{__name__=\"fake_energy_target\"}'\n      resources:\n        overrides:\n          exported_instance:\n
+    \           resource: node\n      name:\n        matches: '.*'\n        as: \"node_fake_energy_target\"\n
+    \     metricsQuery: fake_energy_target\n      # Difference between fake energy
+    consumption and fake energy target\n    - seriesQuery: '{__name__=\"fake_energy_target\"}'\n
     \     resources:\n        overrides:\n          instance:\n            resource:
-    node\n      name:\n        matches: ^cpu_(.*)_target\n      # metricsQuery: node_cpu_diff
-    - 100 + 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n
-    \     metricsQuery: avg by (instance) (label_replace(cpu_diff_target, \"instance\",
-    \"$1\", \"exported_instance\", \"(.*)\")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n
-    \   - seriesQuery: '{namespace!=\"\",__name__!~\"^container_.*\"}'\n      seriesFilters:
-    []\n      resources:\n        template: <<.Resource>>\n      name:\n        matches:
-    ^(.*)_seconds_total$\n        as: \"\"\n      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}[1m])
-    by (<<.GroupBy>>)\n---\n# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-resource-reader-cluster-role.yaml\napiVersion:
+    node\n      name:\n        matches: '.*'\n        as: \"node_fake_energy_target_diff\"\n
+    \     metricsQuery: avg by (instance) (label_replace(fake_energy_target, \"instance\",
+    \"$1\", \"exported_instance\", \"(.*)\")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n---\n#
+    Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-resource-reader-cluster-role.yaml\napiVersion:
     rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: custom-metrics-resource-reader\nrules:\n-
     apiGroups:\n  - \"\"\n  resources:\n  - namespaces\n  - pods\n  - services\n  -
     nodes\n  verbs:\n  - get\n  - list\n  - watch\n---\napiVersion: v1\ndata:\n  tls.crt:
