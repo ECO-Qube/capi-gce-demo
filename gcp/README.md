@@ -250,3 +250,5 @@ on: `kubectl logs -n default telemetry-aware-scheduling-[..]`.
 - [ ] Is the TASPolicy resource correctly configured?
 - [ ] Is the Pod correctly configured (policy name in the labels? nodeAffinity? telemetry/scheduling: "1" in the limits
   field?)
+- [ ] If you changed something for the custom-metrics API or Prometheus, did you scale them down to 0 and then back to 1
+  to force a restart?
