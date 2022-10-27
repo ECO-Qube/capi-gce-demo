@@ -1,0 +1,191 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ecoqube-mgmt
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    serviceDomain: cluster.local
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: ecoqube-mgmt-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+    kind: OpenStackCluster
+    name: ecoqube-mgmt
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackCluster
+metadata:
+  name: ecoqube-mgmt
+  namespace: default
+spec:
+  cloudName: openstack
+  dnsNameservers:
+  - 8.8.8.8
+  externalNetworkId: 8e5055bc-be3d-4074-b1ce-6048ce7229a8
+  identityRef:
+    kind: Secret
+    name: ecoqube-mgmt-cloud-config
+  managedSecurityGroups: true
+  nodeCidr: 10.6.0.0/24
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: ecoqube-mgmt-control-plane
+  namespace: default
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        extraVolumes:
+        - hostPath: /etc/kubernetes/cloud.conf
+          mountPath: /etc/kubernetes/cloud.conf
+          name: cloud
+          readOnly: true
+      controllerManager:
+        extraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        extraVolumes:
+        - hostPath: /etc/kubernetes/cloud.conf
+          mountPath: /etc/kubernetes/cloud.conf
+          name: cloud
+          readOnly: true
+        - hostPath: /etc/certs/cacert
+          mountPath: /etc/certs/cacert
+          name: cacerts
+          readOnly: true
+      imageRepository: registry.k8s.io
+    files:
+    - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE2NS4yMi4xMC45OC9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJwYTU1dzByZCIKdGVuYW50LWlkPSI2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MyIKdGVuYW50LW5hbWU9ImRlbW8iCmRvbWFpbi1uYW1lPSJEZWZhdWx0IgpyZWdpb249IlJlZ2lvbk9uZSIK
+      encoding: base64
+      owner: root
+      path: /etc/kubernetes/cloud.conf
+      permissions: "0600"
+    - content: Cg==
+      encoding: base64
+      owner: root
+      path: /etc/certs/cacert
+      permissions: "0600"
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        name: '{{ local_hostname }}'
+    joinConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-config: /etc/kubernetes/cloud.conf
+          cloud-provider: openstack
+        name: '{{ local_hostname }}'
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+      kind: OpenStackMachineTemplate
+      name: ecoqube-mgmt-control-plane
+  replicas: 1
+  version: v1.25.0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: ecoqube-mgmt-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: openstack
+      flavor: ds4G
+      identityRef:
+        kind: Secret
+        name: ecoqube-mgmt-cloud-config
+      image: ubuntu-2004-kube-v1.25.0
+      sshKeyName: admin
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ecoqube-mgmt-md-0
+  namespace: default
+spec:
+  clusterName: ecoqube-mgmt
+  replicas: 1
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ecoqube-mgmt-md-0
+      clusterName: ecoqube-mgmt
+      failureDomain: nova
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+        kind: OpenStackMachineTemplate
+        name: ecoqube-mgmt-md-0
+      version: v1.25.0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackMachineTemplate
+metadata:
+  name: ecoqube-mgmt-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      cloudName: openstack
+      flavor: ds4G
+      identityRef:
+        kind: Secret
+        name: ecoqube-mgmt-cloud-config
+      image: ubuntu-2004-kube-v1.25.0
+      sshKeyName: admin
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ecoqube-mgmt-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      files:
+      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE2NS4yMi4xMC45OC9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJwYTU1dzByZCIKdGVuYW50LWlkPSI2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MyIKdGVuYW50LW5hbWU9ImRlbW8iCmRvbWFpbi1uYW1lPSJEZWZhdWx0IgpyZWdpb249IlJlZ2lvbk9uZSIK
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/cloud.conf
+        permissions: "0600"
+      - content: Cg==
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-config: /etc/kubernetes/cloud.conf
+            cloud-provider: openstack
+          name: '{{ local_hostname }}'
+---
+apiVersion: v1
+data:
+  cacert: Cg==
+  clouds.yaml: Y2xvdWRzOgogIG9wZW5zdGFjazoKICAgIGF1dGg6CiAgICAgIGF1dGhfdXJsOiBodHRwOi8vMTY1LjIyLjEwLjk4L2lkZW50aXR5CiAgICAgIHVzZXJuYW1lOiAiYWRtaW4iCiAgICAgIHBhc3N3b3JkOiBwYTU1dzByZAogICAgICBwcm9qZWN0X2lkOiA2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MwogICAgICBwcm9qZWN0X25hbWU6ICJkZW1vIgogICAgICB1c2VyX2RvbWFpbl9uYW1lOiAiRGVmYXVsdCIKICAgIHJlZ2lvbl9uYW1lOiAiUmVnaW9uT25lIgogICAgaW50ZXJmYWNlOiAicHVibGljIgogICAgaWRlbnRpdHlfYXBpX3ZlcnNpb246IDMK
+kind: Secret
+metadata:
+  labels:
+    clusterctl.cluster.x-k8s.io/move: "true"
+  name: ecoqube-mgmt-cloud-config
+  namespace: default
