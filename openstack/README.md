@@ -56,10 +56,8 @@ e.g. `ssh sesame@192.168.10.153`. Copy `/etc/openstack/clouds.yaml` into your lo
 
 > Note you can also download the `clouds.yaml` file from the GUI `API access > Download OpenStack RC File > OpenStack clouds.yaml file`
 
-In my case, the file didn't have all the information, in particular it didn't have the password set, so
-I kept getting an error from the CAPO controller telling I should specify one.
-Just add a field "password" with the user's password under the variable `username` in the
-`clouds.yaml` file before running `source` on it.
+Check that the `clouds.yaml` file has a field `password` specified under `auth`. If not, add it and set it to the password.
+Then run the following:
 
 ```bash
 wget https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-openstack/master/templates/env.rc -O /tmp/env.rc
@@ -84,7 +82,7 @@ export OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR=ds4G
 export OPENSTACK_NODE_MACHINE_FLAVOR=ds4G
 export OPENSTACK_IMAGE_NAME=ubuntu-2004-kube-v1.25.0
 export OPENSTACK_SSH_KEY_NAME=admin
-export OPENSTACK_EXTERNAL_NETWORK_ID=2e9f036a-a831-4290-bbdd-aeb86f5e2f0c
+export OPENSTACK_EXTERNAL_NETWORK_ID=8e5055bc-be3d-4074-b1ce-6048ce7229a8
 
 export EXP_CLUSTER_RESOURCE_SET=true
 ```
@@ -93,7 +91,7 @@ then generate the config:
 
 ```bash
 kind create cluster --config=bootstrap-kind-config.yaml
-clusterctl init --infrastructure openstack
+clusterctl init --infrastructur e openstack
 clusterctl generate cluster ecoqube-mgmt --flavor without-lb \
   --kubernetes-version=v1.25.0 \
   --control-plane-machine-count=1 \
@@ -124,7 +122,6 @@ clusterctl get kubeconfig ecoqube-mgmt > ecoqube-mgmt.kubeconfig
 Go to Horizon, top right on the navbar there is a button with your username. Download the OpenStack RC File, then
 run `source <youruser-openrc.sh>` and input the admin password.
 
-### Upload image through CLI
+## Error pulling gcr.k8s.io
 
-
-
+Replace value in `imageRegistry` in `KubeadmControlPlane` with `registry.k8s.io`.
