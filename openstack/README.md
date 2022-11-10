@@ -91,7 +91,7 @@ then generate the config:
 
 ```bash
 kind create cluster --config=bootstrap-kind-config.yaml
-clusterctl init --infrastructur e openstack
+clusterctl init --infrastructure openstack
 clusterctl generate cluster ecoqube-mgmt --flavor without-lb \
   --kubernetes-version=v1.25.0 \
   --control-plane-machine-count=1 \
