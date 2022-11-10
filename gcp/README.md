@@ -98,7 +98,7 @@ Generate Cluster API config (only for documentation purposes, see below note)
 
 ```bash
 clusterctl generate cluster scheduling-dev-mgmt \
-  --kubernetes-version v1.21.10 \
+  --kubernetes-version v1.25.0 \
   --control-plane-machine-count=1 \
   --worker-machine-count=1 \
   > scheduling-dev-mgmt.yaml
@@ -183,14 +183,17 @@ Create a workload cluster:
 
 ```
 clusterctl generate cluster scheduling-dev-wkld \
-  --kubernetes-version v1.21.10 \
+  --kubernetes-version v1.25.0 \
   --control-plane-machine-count=1 \
   --worker-machine-count=3 \
   > scheduling-dev-wkld.yaml
 ```
 
-then follow [this guide](capi-resource-set/cluster-automate.md) to create the config related to the ClusterResourceSets
-and automatically provision CNI and Scheduler at cluster initialization.
+then follow [this guide](https://github.com/criscola/platform-aware-scheduling/tree/74a191bd5d1e38a341e5985b32e5772b0a2cd1fc/telemetry-aware-scheduling/deploy/cluster-api) to create the config related to the ClusterResourceSets
+to automatically provision CNI and Scheduler at cluster initialization. Note that at this time the PR on the TAS repo is not yet 
+merged to main -- search for Cluster API's deployment option and its README. All these steps are **already** implemented
+and it just suffices to use the resources present in the current repo, minus maybe stuff related to TLS since it's
+better, for security reasons, to re-generate those and avoid pushing to the repo during the production cluster set up.
 
 Finally, apply the config:
 
