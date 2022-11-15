@@ -259,7 +259,52 @@ spec:
   template:
     spec:
       kubeadmConfigSpec:
+        # Added
+        files:
+          - path: /etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml
+            content: |
+              apiVersion: kubescheduler.config.k8s.io/v1
+              kind: KubeSchedulerConfiguration
+              clientConnection:
+                kubeconfig: /etc/kubernetes/scheduler.conf
+              extenders:
+                - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
+                  prioritizeVerb: "scheduler/prioritize"
+                  filterVerb: "scheduler/filter"
+                  weight: 1
+                  enableHTTPS: true
+                  managedResources:
+                    - name: "telemetry/scheduling"
+                      ignoredByScheduler: true
+                  ignorable: true
+                  tlsConfig:
+                    insecure: false
+                    certFile: "/host/certs/client.crt"
+                    keyFile: "/host/certs/client.key"
+          - path: /etc/kubernetes/kubeadm/patches/kube-scheduler+json.json
+            content: |-
+              [
+                  {
+                      "op": "add",
+                      "path": "/spec/dnsPolicy",
+                      "value": "ClusterFirstWithHostNet"
+                  }
+              ]
         clusterConfiguration:
+          # Added
+          scheduler:
+            extraArgs:
+              config: "/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml"
+            extraVolumes:
+              - hostPath: "/etc/kubernetes/schedulerconfig"
+                mountPath: "/etc/kubernetes/schedulerconfig"
+                name: schedulerconfig
+              - hostPath: "/etc/kubernetes/pki/ca.key"
+                mountPath: "/host/certs/client.key"
+                name: cacert
+              - hostPath: "/etc/kubernetes/pki/ca.crt"
+                mountPath: "/host/certs/client.crt"
+                name: clientcert
           apiServer:
             certSANs:
             - localhost
@@ -270,11 +315,17 @@ spec:
             extraArgs:
               enable-hostpath-provisioner: "true"
         initConfiguration:
+          # Added
+          patches:
+            directory: /etc/kubernetes/kubeadm/patches
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
         joinConfiguration:
+          # Added
+          patches:
+            directory: /etc/kubernetes/kubeadm/patches
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
@@ -323,6 +374,8 @@ kind: Cluster
 metadata:
   name: capi-quickstart
   namespace: default
+  labels:
+    scheduler: tas
 spec:
   clusterNetwork:
     pods:

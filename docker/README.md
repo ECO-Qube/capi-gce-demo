@@ -1,6 +1,6 @@
 ## Setting up Cluster API on Docker 
 
-### Setting up Cluster API on KinD/Docker
+### Setting up Cluster API using KinD/Docker
 
 From https://cluster-api.sigs.k8s.io/user/quick-start.html
 
@@ -31,6 +31,12 @@ export EXP_CLUSTER_RESOURCE_SET=true
 The Docker provider does not require additional configurations for cluster templates, however things like CIDRs and 
 Service Domain name are configurable so check out the quickstart if necessary.
 
+Init KinD cluster:
+
+```bash
+kind create cluster --config kind-cluster-with-extramounts.yaml  
+```
+
 Init the provider:
 
 ```bash
@@ -44,7 +50,7 @@ clusterctl generate cluster capi-quickstart --flavor development \
   --kubernetes-version v1.25.0 \
   --control-plane-machine-count=1 \
   --worker-machine-count=3 \
-  > capi-quickstart.yam
+  > capi-quickstart.yaml
 ```
 
 Modify the yaml with your desired config. When ready:
@@ -89,4 +95,11 @@ Check nodes for Ready status:
 ```bash
 kubectl --kubeconfig=./capi-quickstart.kubeconfig get nodes
 ```
+
+### Setting up TAS in CAPD
+
+Note the difference between CAPD and the other infra providers, CAPD uses the new bleeding-edge ClusterClass.
+It's different than the other manifests because it uses `KubeadmControlPlaneTemplate` vs the plain
+`KubeadmControlPlane` resource. Patches are not present under `initConfiguration` and `joinConfiguration`. 
+It is necessary to specify the patches in another resource, namely 
 

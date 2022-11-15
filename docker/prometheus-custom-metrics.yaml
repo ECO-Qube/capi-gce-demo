@@ -1,0 +1,248 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: custom-metrics
+  labels:
+    name: custom-metrics
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-service-account.yaml
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-config-map.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adapter-config
+  namespace: custom-metrics
+data:
+  config.yaml: |
+    rules:
+    - seriesQuery: '{__name__=~"^container_.*",container_name!="POD",namespace!="",pod_name!=""}'
+      seriesFilters: []
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod_name:
+            resource: pod
+      name:
+        matches: ^container_(.*)_seconds_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>,container_name!="POD"}[1m])) by (<<.GroupBy>>)
+    - seriesQuery: '{__name__=~"^container_.*",container_name!="POD",namespace!="",pod_name!=""}'
+      seriesFilters:
+      - isNot: ^container_.*_seconds_total$
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod_name:
+            resource: pod
+      name:
+        matches: ^container_(.*)_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>,container_name!="POD"}[1m])) by (<<.GroupBy>>)
+    - seriesQuery: '{__name__=~"^container_.*",container_name!="POD",namespace!="",pod_name!=""}'
+      seriesFilters:
+      - isNot: ^container_.*_total$
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod_name:
+            resource: pod
+      name:
+        matches: ^container_(.*)$
+        as: ""
+      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>,container_name!="POD"}) by (<<.GroupBy>>)
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters:
+      - isNot: .*_total$
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ""
+        as: ""
+      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters:
+      - isNot: .*_seconds_total
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ^(.*)_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)
+    - seriesQuery: '{__name__=~"^node_.*"}'
+      resources:
+        overrides:
+          instance:
+            resource: node
+      name:
+        matches: ^node_(.*)
+      metricsQuery: <<.Series>>
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters: []
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ^(.*)_seconds_total$
+        as: ""
+      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}[1m]) by (<<.GroupBy>>)
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-cluster-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-metrics-server-resources
+rules:
+- apiGroups:
+  - ""
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-resource-reader-cluster-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-metrics-resource-reader
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  - services
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-auth-delegator-cluster-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-metrics:system:auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-resource-reader-cluster-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-metrics-resource-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: custom-metrics-resource-reader
+subjects:
+- kind: ServiceAccount
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-auth-reader-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: custom-metrics-auth-reader 
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+spec:
+  ports:
+  - port: 443
+    targetPort: 6443
+  selector:
+    app: custom-metrics-apiserver
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiserver-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: custom-metrics-apiserver
+  name: custom-metrics-apiserver
+  namespace: custom-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-metrics-apiserver
+  template:
+    metadata:
+      labels:
+        app: custom-metrics-apiserver
+      name: custom-metrics-apiserver
+    spec:
+      serviceAccountName: custom-metrics-apiserver
+      containers:
+      - name: custom-metrics-apiserver
+        image: directxman12/k8s-prometheus-adapter-amd64
+        args:
+        - --secure-port=6443
+        - --tls-cert-file=/var/run/serving-cert/tls.crt
+        - --tls-private-key-file=/var/run/serving-cert/tls.key
+        - --logtostderr=true
+        - --prometheus-url=http://prom-service.monitoring.svc:9090/
+        - --metrics-relist-interval=1m
+        - --v=10
+        - --config=/etc/adapter/config.yaml
+        ports:
+        - containerPort: 6443
+        volumeMounts:
+        - mountPath: /var/run/serving-cert
+          name: volume-serving-cert
+          readOnly: true
+        - mountPath: /etc/adapter/
+          name: config
+          readOnly: true
+        - mountPath: /tmp
+          name: tmp-vol
+      volumes:
+      - name: volume-serving-cert
+        secret:
+          secretName: cm-adapter-serving-certs
+      - name: config
+        configMap:
+          name: adapter-config
+      - name: tmp-vol
+        emptyDir: {}
+---
+# Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-apiservice.yaml
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1beta1.custom.metrics.k8s.io
+spec:
+  service:
+    name: custom-metrics-apiserver
+    namespace: custom-metrics
+  group: custom.metrics.k8s.io
+  version: v1beta1
+  insecureSkipTLSVerify: true
+  groupPriorityMinimum: 100
+  versionPriority: 100

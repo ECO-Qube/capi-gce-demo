@@ -27,7 +27,7 @@ spec:
   cloudName: openstack
   dnsNameservers:
   - 8.8.8.8
-  externalNetworkId: 8e5055bc-be3d-4074-b1ce-6048ce7229a8
+  externalNetworkId: 59ba0d05-14c4-4010-94a7-d85ccf6f532c
   identityRef:
     kind: Secret
     name: ecoqube-mgmt-cloud-config
@@ -66,7 +66,7 @@ spec:
           readOnly: true
       imageRepository: registry.k8s.io
     files:
-    - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE2NS4yMi4xMC45OC9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJwYTU1dzByZCIKdGVuYW50LWlkPSI2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MyIKdGVuYW50LW5hbWU9ImRlbW8iCmRvbWFpbi1uYW1lPSJEZWZhdWx0IgpyZWdpb249IlJlZ2lvbk9uZSIK
+    - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzY0LjIyNy42LjEwMi9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJzdGFjayIKdGVuYW50LWlkPSI2NTMxOWI2ZDE3NzM0ZjIwOGU2MjU0NDVjMmMzNzdhMSIKdGVuYW50LW5hbWU9ImFkbWluIgpkb21haW4tbmFtZT0iRGVmYXVsdCIKcmVnaW9uPSJSZWdpb25PbmUiCg==
       encoding: base64
       owner: root
       path: /etc/kubernetes/cloud.conf
@@ -162,7 +162,7 @@ spec:
   template:
     spec:
       files:
-      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzE2NS4yMi4xMC45OC9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJwYTU1dzByZCIKdGVuYW50LWlkPSI2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MyIKdGVuYW50LW5hbWU9ImRlbW8iCmRvbWFpbi1uYW1lPSJEZWZhdWx0IgpyZWdpb249IlJlZ2lvbk9uZSIK
+      - content: W0dsb2JhbF0KYXV0aC11cmw9aHR0cDovLzY0LjIyNy42LjEwMi9pZGVudGl0eQp1c2VybmFtZT0iYWRtaW4iCnBhc3N3b3JkPSJzdGFjayIKdGVuYW50LWlkPSI2NTMxOWI2ZDE3NzM0ZjIwOGU2MjU0NDVjMmMzNzdhMSIKdGVuYW50LW5hbWU9ImFkbWluIgpkb21haW4tbmFtZT0iRGVmYXVsdCIKcmVnaW9uPSJSZWdpb25PbmUiCg==
         encoding: base64
         owner: root
         path: /etc/kubernetes/cloud.conf
@@ -182,7 +182,7 @@ spec:
 apiVersion: v1
 data:
   cacert: Cg==
-  clouds.yaml: Y2xvdWRzOgogIG9wZW5zdGFjazoKICAgIGF1dGg6CiAgICAgIGF1dGhfdXJsOiBodHRwOi8vMTY1LjIyLjEwLjk4L2lkZW50aXR5CiAgICAgIHVzZXJuYW1lOiAiYWRtaW4iCiAgICAgIHBhc3N3b3JkOiBwYTU1dzByZAogICAgICBwcm9qZWN0X2lkOiA2ODExYTg1NmZmNTI0NzVmOGQ5Njc0YmZlOWUyZGI5MwogICAgICBwcm9qZWN0X25hbWU6ICJkZW1vIgogICAgICB1c2VyX2RvbWFpbl9uYW1lOiAiRGVmYXVsdCIKICAgIHJlZ2lvbl9uYW1lOiAiUmVnaW9uT25lIgogICAgaW50ZXJmYWNlOiAicHVibGljIgogICAgaWRlbnRpdHlfYXBpX3ZlcnNpb246IDMK
+  clouds.yaml: Y2xvdWRzOgogIG9wZW5zdGFjazoKICAgIGF1dGg6CiAgICAgIGF1dGhfdXJsOiBodHRwOi8vNjQuMjI3LjYuMTAyL2lkZW50aXR5CiAgICAgIHVzZXJuYW1lOiAiYWRtaW4iCiAgICAgIHBhc3N3b3JkOiBzdGFjawogICAgICBwcm9qZWN0X2lkOiA2NTMxOWI2ZDE3NzM0ZjIwOGU2MjU0NDVjMmMzNzdhMQogICAgICBwcm9qZWN0X25hbWU6ICJhZG1pbiIKICAgICAgdXNlcl9kb21haW5fbmFtZTogIkRlZmF1bHQiCiAgICByZWdpb25fbmFtZTogIlJlZ2lvbk9uZSIKICAgIGludGVyZmFjZTogInB1YmxpYyIKICAgIGlkZW50aXR5X2FwaV92ZXJzaW9uOiAzCg==
 kind: Secret
 metadata:
   labels:
