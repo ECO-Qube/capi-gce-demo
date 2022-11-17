@@ -30,4 +30,4 @@ spec:
       machineDeployments:
         - class: "default-worker"
           name: "default-worker-topo"
-          replicas: 1
+          replicas: 3

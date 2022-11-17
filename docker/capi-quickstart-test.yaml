@@ -260,20 +260,6 @@ spec:
     spec:
       kubeadmConfigSpec:
         clusterConfiguration:
-          # Added
-          scheduler:
-            extraArgs:
-              config: "/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml"
-            extraVolumes:
-              - hostPath: "/etc/kubernetes/schedulerconfig"
-                mountPath: "/etc/kubernetes/schedulerconfig"
-                name: schedulerconfig
-              - hostPath: "/etc/kubernetes/pki/ca.key"
-                mountPath: "/host/certs/client.key"
-                name: cacert
-              - hostPath: "/etc/kubernetes/pki/ca.crt"
-                mountPath: "/host/certs/client.crt"
-                name: clientcert
           apiServer:
             certSANs:
             - localhost
@@ -282,54 +268,17 @@ spec:
             - host.docker.internal
           controllerManager:
             extraArgs:
-              extraArgs: { enable-hostpath-provisioner: 'true' }
+              enable-hostpath-provisioner: "true"
         initConfiguration:
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
-          # Added
-          patches:
-            directory: /etc/tas/kubeadm/patches
         joinConfiguration:
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
-          # Added
-          patches:
-            directory: /etc/tas/kubeadm/patches
-        # Added
-        files:
-          - path: /etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml
-            content: |
-              apiVersion: kubescheduler.config.k8s.io/v1
-              kind: KubeSchedulerConfiguration
-              clientConnection:
-                kubeconfig: /etc/kubernetes/scheduler.conf
-              extenders:
-                - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
-                  prioritizeVerb: "scheduler/prioritize"
-                  filterVerb: "scheduler/filter"
-                  weight: 1
-                  enableHTTPS: true
-                  managedResources:
-                    - name: "telemetry/scheduling"
-                      ignoredByScheduler: true
-                  ignorable: true
-                  tlsConfig:
-                    insecure: false
-                    certFile: "/host/certs/client.crt"
-                    keyFile: "/host/certs/client.key"
-          - path: /etc/tas/kubeadm/patches/kube-scheduler+json.json
-            content: |-
-              [
-                  {
-                      "op": "add",
-                      "path": "/spec/dnsPolicy",
-                      "value": "ClusterFirstWithHostNet"
-                  }
-              ]
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
@@ -374,8 +323,6 @@ kind: Cluster
 metadata:
   name: capi-quickstart
   namespace: default
-  labels:
-    scheduler: tas
 spec:
   clusterNetwork:
     pods:
@@ -403,7 +350,7 @@ spec:
         enabled: true
         enforce: baseline
         warn: restricted
-    version: v1.25.0
+    version: v1.25.3
     workers:
       machineDeployments:
       - class: default-worker

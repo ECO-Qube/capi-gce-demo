@@ -47,7 +47,7 @@ Generate the cluster YAML configs:
 
 ```bash
 clusterctl generate cluster capi-quickstart --flavor development \
-  --kubernetes-version v1.25.0 \
+  --kubernetes-version v1.25.3 \
   --control-plane-machine-count=1 \
   --worker-machine-count=3 \
   > capi-quickstart.yaml

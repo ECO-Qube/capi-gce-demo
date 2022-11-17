@@ -281,8 +281,7 @@ spec:
             - 0.0.0.0
             - host.docker.internal
           controllerManager:
-            extraArgs:
-              extraArgs: { enable-hostpath-provisioner: 'true' }
+            extraArgs: { enable-hostpath-provisioner: 'true' }
         initConfiguration:
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
@@ -301,35 +300,35 @@ spec:
             directory: /etc/tas/kubeadm/patches
         # Added
         files:
-          - path: /etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml
-            content: |
-              apiVersion: kubescheduler.config.k8s.io/v1
-              kind: KubeSchedulerConfiguration
-              clientConnection:
-                kubeconfig: /etc/kubernetes/scheduler.conf
-              extenders:
-                - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
-                  prioritizeVerb: "scheduler/prioritize"
-                  filterVerb: "scheduler/filter"
-                  weight: 1
-                  enableHTTPS: true
-                  managedResources:
-                    - name: "telemetry/scheduling"
-                      ignoredByScheduler: true
-                  ignorable: true
-                  tlsConfig:
-                    insecure: false
-                    certFile: "/host/certs/client.crt"
-                    keyFile: "/host/certs/client.key"
-          - path: /etc/tas/kubeadm/patches/kube-scheduler+json.json
-            content: |-
-              [
-                  {
-                      "op": "add",
-                      "path": "/spec/dnsPolicy",
-                      "value": "ClusterFirstWithHostNet"
-                  }
-              ]
+        - path: /etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml
+          content: |
+            apiVersion: kubescheduler.config.k8s.io/v1
+            kind: KubeSchedulerConfiguration
+            clientConnection:
+              kubeconfig: /etc/kubernetes/scheduler.conf
+            extenders:
+              - urlPrefix: "https://tas-service.default.svc.cluster.local:9001"
+                prioritizeVerb: "scheduler/prioritize"
+                filterVerb: "scheduler/filter"
+                weight: 1
+                enableHTTPS: true
+                managedResources:
+                  - name: "telemetry/scheduling"
+                    ignoredByScheduler: true
+                ignorable: true
+                tlsConfig:
+                  insecure: false
+                  certFile: "/host/certs/client.crt"
+                  keyFile: "/host/certs/client.key"
+        - path: /etc/tas/kubeadm/patches/kube-scheduler+json.json
+          content: |-
+            [
+                {
+                    "op": "add",
+                    "path": "/spec/dnsPolicy",
+                    "value": "ClusterFirstWithHostNet"
+                }
+            ]
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
@@ -378,32 +377,30 @@ metadata:
     scheduler: tas
 spec:
   clusterNetwork:
-    pods:
-      cidrBlocks:
-      - 192.168.0.0/16
-    serviceDomain: cluster.local
     services:
-      cidrBlocks:
-      - 10.128.0.0/12
+      cidrBlocks: ['10.128.0.0/12']
+    pods:
+      cidrBlocks: ['192.168.0.0/16']
+    serviceDomain: cluster.local
   topology:
     class: quick-start
     controlPlane:
       metadata: {}
       replicas: 1
-    variables:
-    - name: imageRepository
-      value: ""
-    - name: etcdImageTag
-      value: ""
-    - name: coreDNSImageTag
-      value: ""
-    - name: podSecurityStandard
-      value:
-        audit: restricted
-        enabled: true
-        enforce: baseline
-        warn: restricted
-    version: v1.25.0
+#    variables:
+#    - name: imageRepository
+#      value: ""
+#    - name: etcdImageTag
+#      value: ""
+#    - name: coreDNSImageTag
+#      value: ""
+#    - name: podSecurityStandard
+#      value:
+#        audit: restricted
+#        enabled: true
+#        enforce: baseline
+#        warn: restricted
+    version: v1.25.3
     workers:
       machineDeployments:
       - class: default-worker
