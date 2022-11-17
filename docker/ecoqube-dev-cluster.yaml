@@ -14,7 +14,7 @@ spec:
       cidrBlocks: ['192.168.0.0/16']
     serviceDomain: 'cluster.local'
   topology:
-    class: "quick-start"
+    class: "ecoqube-tas"
     version: "v1.25.3"
     controlPlane:
       replicas: 1

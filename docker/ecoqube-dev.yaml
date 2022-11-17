@@ -9,16 +9,16 @@ spec:
       ref:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: DockerMachineTemplate
-        name: quick-start-control-plane
+        name: ecoqube-tas-control-plane
     ref:
       apiVersion: controlplane.cluster.x-k8s.io/v1beta1
       kind: KubeadmControlPlaneTemplate
-      name: quick-start-control-plane
+      name: ecoqube-tas-control-plane
   infrastructure:
     ref:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: DockerClusterTemplate
-      name: quick-start-cluster
+      name: ecoqube-tas-cluster
   patches:
     - definitions:
         - jsonPatches:
