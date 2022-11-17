@@ -4,7 +4,8 @@ metadata:
   name: "my-cluster"
   namespace: default
   labels:
-    cni: "my-cluster-crs-0"
+    cni: calico
+    scheduler: tas
 spec:
   clusterNetwork:
     services:
@@ -17,6 +18,13 @@ spec:
     version: "v1.25.3"
     controlPlane:
       replicas: 1
+    variables:
+      - name: podSecurityStandard
+        value:
+          audit: restricted
+          enabled: true
+          enforce: baseline
+          warn: restricted
     workers:
       machineDeployments:
         - class: "default-worker"

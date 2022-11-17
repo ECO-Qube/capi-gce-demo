@@ -260,6 +260,26 @@ spec:
     spec:
       kubeadmConfigSpec:
         clusterConfiguration:
+          # Added
+          scheduler:
+            extraArgs:
+              config: "/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml"
+            extraVolumes:
+              - hostPath: "/etc/kubernetes/schedulerconfig"
+                mountPath: "/etc/kubernetes/schedulerconfig"
+                name: schedulerconfig
+              - hostPath: "/etc/kubernetes/pki/ca.key"
+                mountPath: "/host/certs/client.key"
+                name: cacert
+              - hostPath: "/etc/kubernetes/pki/ca.crt"
+                mountPath: "/host/certs/client.crt"
+                name: clientcert
+          apiServer:
+            certSANs:
+              - localhost
+              - 127.0.0.1
+              - 0.0.0.0
+              - host.docker.internal
           controllerManager:
             extraArgs: { enable-hostpath-provisioner: 'true' }
 #          apiServer:
