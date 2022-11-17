@@ -18,13 +18,14 @@ spec:
     version: "v1.25.3"
     controlPlane:
       replicas: 1
-    variables:
-      - name: podSecurityStandard
-        value:
-          audit: restricted
-          enabled: true
-          enforce: baseline
-          warn: restricted
+     # Bugged
+#    variables:
+#      - name: podSecurityStandard
+#        value:
+#          audit: restricted
+#          enabled: true
+#          enforce: baseline
+#          warn: restricted
     workers:
       machineDeployments:
         - class: "default-worker"
