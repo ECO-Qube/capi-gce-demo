@@ -30,7 +30,8 @@ sleep 1
 kubectl apply -f capi-quickstart.yaml
 
 #until watch -n 1 kubectl get kubeadmcontrolplane
-until watch -n 1 kubectl get kubeadmcontrolplane  | grep -m 1 "INITIALIZED"; do sleep 1 ; done
+# TODO: To fix (there should be two "true" in the output eventually)
+#until watch -n 1 kubectl get kubeadmcontrolplane  | grep -m 1 "INITIALIZED"; do sleep 1 ; done
 
 clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
 sed -i -e "s/server:.*/server: https:\/\/$(docker port capi-quickstart-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" ./capi-quickstart.kubeconfig

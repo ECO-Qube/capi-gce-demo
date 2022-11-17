@@ -1,6 +1,12 @@
 apiVersion: v1
 data:
-  prometheus-node-exporter.yaml: "---\n# Source: prometheus_node_exporter_helm_chart/templates/node-exporter-ds.yaml\napiVersion:
+  prometheus-node-exporter.yaml: "---\n# Source: prometheus_node_exporter_helm_chart/templates/node-exporter-service.yaml\napiVersion:
+    v1\nkind: Service\nmetadata:\n  name: node-exporter\n  namespace: kube-system\n
+    \ annotations:\n    prometheus.io/scrape: \"true\"\n  labels:\n    kubernetes.io/cluster-service:
+    \"true\"\n    addonmanager.kubernetes.io/mode: Reconcile\n    kubernetes.io/name:
+    \"NodeExporter\"\nspec:\n  clusterIP: None\n  ports:\n    - name: metrics\n      port:
+    9100\n      protocol: TCP\n      targetPort: 9100\n  selector:\n    k8s-app: node-exporter\n---\n#
+    Source: prometheus_node_exporter_helm_chart/templates/node-exporter-ds.yaml\napiVersion:
     apps/v1\nkind: DaemonSet\nmetadata:\n  name: node-exporter \n  namespace: kube-system\n
     \ labels:\n    k8s-app: node-exporter\n    kubernetes.io/cluster-service: \"true\"\n
     \   addonmanager.kubernetes.io/mode: Reconcile\n    version: v0.15.2\nspec:\n
@@ -19,13 +25,7 @@ data:
     /host/node-metrics\n              readOnly: true\n      hostNetwork: true\n      hostPID:
     true\n      volumes:\n        - name: proc\n          hostPath:\n            path:
     /proc\n        - name: sys\n          hostPath:\n            path: /sys\n        -
-    name: node-metrics\n          hostPath:\n            path: /tmp/node-metrics\n---\n#
-    Source: prometheus_node_exporter_helm_chart/templates/node-exporter-service.yaml\napiVersion:
-    v1\nkind: Service\nmetadata:\n  name: node-exporter\n  namespace: kube-system\n
-    \ annotations:\n    prometheus.io/scrape: \"true\"\n  labels:\n    kubernetes.io/cluster-service:
-    \"true\"\n    addonmanager.kubernetes.io/mode: Reconcile\n    kubernetes.io/name:
-    \"NodeExporter\"\nspec:\n  clusterIP: None\n  ports:\n    - name: metrics\n      port:
-    9100\n      protocol: TCP\n      targetPort: 9100\n  selector:\n    k8s-app: node-exporter"
+    name: node-metrics\n          hostPath:\n            path: /tmp/node-metrics\n"
 kind: ConfigMap
 metadata:
   creationTimestamp: null

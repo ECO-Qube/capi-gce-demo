@@ -1,7 +1,7 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: ClusterClass
 metadata:
-  name: quick-start
+  name: ecoqube-tas
   namespace: default
 spec:
   controlPlane:
@@ -165,7 +165,7 @@ spec:
                           usernames: []
                           runtimeClasses: []
                           namespaces: [kube-system]
-                    path: /etc/kubernetes/kube-apiserver-admission-pss.yaml
+                  path: /etc/kubernetes/kube-apiserver-admission-pss.yaml
           selector:
             apiVersion: controlplane.cluster.x-k8s.io/v1beta1
             kind: KubeadmControlPlaneTemplate
@@ -234,17 +234,17 @@ spec:
             ref:
               apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
               kind: KubeadmConfigTemplate
-              name: quick-start-default-worker-bootstraptemplate
+              name: ecoqube-tas-default-worker-bootstraptemplate
           infrastructure:
             ref:
               apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
               kind: DockerMachineTemplate
-              name: quick-start-default-worker-machinetemplate
+              name: ecoqube-tas-default-worker-machinetemplate
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerClusterTemplate
 metadata:
-  name: quick-start-cluster
+  name: ecoqube-tas-cluster
   namespace: default
 spec:
   template:
@@ -253,7 +253,7 @@ spec:
 kind: KubeadmControlPlaneTemplate
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 metadata:
-  name: quick-start-control-plane
+  name: ecoqube-tas-control-plane
   namespace: default
 spec:
   template:
@@ -282,9 +282,6 @@ spec:
               - host.docker.internal
           controllerManager:
             extraArgs: { enable-hostpath-provisioner: 'true' }
-#          apiServer:
-            # host.docker.internal is required by kubetest when running on MacOS because of the way ports are proxied.
-#            certSANs: [ localhost, 127.0.0.1, 0.0.0.0, host.docker.internal ]
         initConfiguration:
           nodeRegistration:
             criSocket: /var/run/containerd/containerd.sock
@@ -333,7 +330,7 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
 metadata:
-  name: quick-start-control-plane
+  name: ecoqube-tas-control-plane
   namespace: default
 spec:
   template:
@@ -345,7 +342,7 @@ spec:
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
 metadata:
-  name: quick-start-default-worker-machinetemplate
+  name: ecoqube-tas-default-worker-machinetemplate
   namespace: default
 spec:
   template:
@@ -354,7 +351,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
-  name: "quick-start-default-worker-bootstraptemplate"
+  name: "ecoqube-tas-default-worker-bootstraptemplate"
   namespace: default
 spec:
   template:
