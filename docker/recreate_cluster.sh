@@ -23,15 +23,17 @@ clusterctl init --infrastructure docker
   #  --control-plane-machine-count=1 \
   #  --worker-machine-count=3 \
   #  > capi-quickstart.yaml
-kubectl apply -f '*-configmap.yaml'
+kubectl apply -f 'capi-resource-set/manifests/*-configmap.yaml'
 sleep 1
 kubectl apply -f clusterresourcesets.yaml
 sleep 1
-kubectl apply -f capi-quickstart.yaml
+kubectl apply -f ecoqube-dev.yaml
+sleep 1
+kubectl apply -f ecoqube-dev-cluster.yaml
 
 #until watch -n 1 kubectl get kubeadmcontrolplane
 # TODO: To fix (there should be two "true" in the output eventually)
 #until watch -n 1 kubectl get kubeadmcontrolplane  | grep -m 1 "INITIALIZED"; do sleep 1 ; done
 
 clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
-sed -i -e "s/server:.*/server: https:\/\/$(docker port capi-quickstart-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" ./capi-quickstart.kubeconfig
+sed -i -e "s/server:.*/server: https:\/\/$(docker port ecoqube-dev-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" ./ecoqube-dev.kubeconfig
