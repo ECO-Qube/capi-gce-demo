@@ -118,3 +118,16 @@ kubectl --kubeconfig=./ecoqube-dev.kubeconfig get nodes
 Note the difference between CAPD and the other infra providers, CAPD uses the new `ClusterClass` resource.
 It's different than the providers right now because it uses `KubeadmControlPlaneTemplate` vs the plain
 `KubeadmControlPlane` resource. Patches are not present under `initConfiguration` and `joinConfiguration`.
+
+### Reconnect to cluster after workstation reboot
+
+If you reboot your workstation, you'll need to put the correct IP address in the kubeconfig file.
+Run the following with the id of your control plane container:
+
+```bash
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 216281f2c7e9
+```
+
+then in the kubeconfig file, replace the IP address with the one you just got in `clusters[0].server`, e.g. 
+`https://172.25.0.5:6443`. If you get an error about certificates, simply log into the control plane container
+and copy the kubeconfig from the standard `/etc/kubernetes/admin.conf` location.
