@@ -30,7 +30,7 @@
 
 ## System architecture
 
-Note: ArgoCD is not present anymore because it was too overkill for the now.
+Note: ArgoCD is not present anymore because it was too overkill for now.
 When dealing with multiple clusters (perhaps with little differences between them), it makes
 much more sense to use it.
 
