@@ -30,6 +30,10 @@
 
 ## System architecture
 
+Note: ArgoCD is not present anymore because it was too overkill for the now.
+When dealing with multiple clusters (perhaps with little differences between them), it makes
+much more sense to use it.
+
 ![architecture_v1.png](https://git.helio.dev/eco-qube/doc/-/raw/main/artifacts/platform-architecture.png)
 
 ## Goal
