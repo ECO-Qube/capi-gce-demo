@@ -14,6 +14,8 @@ nodes:
 EOF
 
 kind delete cluster
+# Clean up docker containers of nodes
+docker ps --filter name="capi-quickstart*" -aq | xargs docker stop | xargs docker rm
 kind create cluster --config kind-cluster-with-extramounts.yaml
 clusterctl init --infrastructure docker
 
@@ -24,11 +26,11 @@ clusterctl init --infrastructure docker
   #  --worker-machine-count=3 \
   #  > capi-quickstart.yaml
 kubectl apply -f 'capi-resource-set/manifests/*-configmap.yaml'
-sleep 1
+sleep 5
 kubectl apply -f clusterresourcesets.yaml
-sleep 1
+sleep 5
 kubectl apply -f ecoqube-dev.yaml
-sleep 1
+sleep 5
 kubectl apply -f ecoqube-dev-cluster.yaml
 
 #until watch -n 1 kubectl get kubeadmcontrolplane
