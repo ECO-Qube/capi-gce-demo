@@ -15,9 +15,8 @@ EOF
 
 kind delete cluster
 # Clean up docker containers of nodes
-docker ps --filter name="capi-quickstart*" -aq | xargs docker stop | xargs docker rm
-kind create cluster --config kind-cluster-with-extramounts.yaml
-clusterctl init --infrastructure docker
+docker ps --filter name="ecoqube*" -aq | xargs docker stop | xargs docker rm
+kind create cluster --config kind-cluster-with-extramounts.yaml && clusterctl init --infrastructure docker
 
 # USE EXISTING ONE
   #clusterctl generate cluster capi-quickstart --flavor development \
