@@ -1,1 +1,2 @@
 .initramfs filter=lfs diff=lfs merge=lfs -text
+/metal3/ramdisk/ironic-python-agent.initramfs filter=lfs diff=lfs merge=lfs -text
