@@ -1,0 +1,22 @@
+apiVersion: telemetry.intel.com/v1alpha1
+kind: TASPolicy
+metadata:
+  name: schedule-until-cap
+  namespace: default
+spec:
+  strategies:
+    deschedule:
+      rules:
+        - metricname: schedulable
+          operator: Equals
+          target: -1
+    dontschedule:
+      rules:
+        - metricname: schedulable
+          operator: Equals
+          target: 0
+    scheduleonmetric:
+      rules:
+        - metricname: schedulable
+          operator: Equals
+          target: 1

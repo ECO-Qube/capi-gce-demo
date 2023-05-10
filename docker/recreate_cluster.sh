@@ -16,7 +16,7 @@ EOF
 kind delete cluster
 # Clean up docker containers of nodes
 docker ps --filter name="ecoqube*" -aq | xargs docker stop | xargs docker rm
-kind create cluster --config kind-cluster-with-extramounts.yaml && clusterctl init --infrastructure docker
+kind create cluster --config kind-cluster-with-extramounts.yaml --image kindest/node:v1.26.3 && clusterctl init --infrastructure docker
 
 # USE EXISTING ONE
   #clusterctl generate cluster capi-quickstart --flavor development \
@@ -37,4 +37,11 @@ kubectl apply -f ecoqube-dev-cluster.yaml
 #until watch -n 1 kubectl get kubeadmcontrolplane  | grep -m 1 "INITIALIZED"; do sleep 1 ; done
 
 clusterctl get kubeconfig ecoqube-dev > ecoqube-dev.kubeconfig
+# note now you need to copy-paste the kubeconfig as it is in the backend before executing the sed command below
+# in charts/target-exporter/ecoqube-dev.kubeconfig
+# cp /home/criscola/IdeaProjects/helio/cluster-api-infrastructure/docker/ecoqube-dev.kubeconfig /home/criscola/IdeaProjects/helio/target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig
+# note: seems like sed command not needed anymore?
 sed -i -e "s/server:.*/server: https:\/\/$(docker port ecoqube-dev-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" ./ecoqube-dev.kubeconfig
+# then update node names k get nodes and copy-paste to config.yaml in target-exporter
+# then port-forward prometheus e.g. kubectl port-forward -n monitoring prometheus-deployment-74c5c98775-466pl 9090:9090
+#

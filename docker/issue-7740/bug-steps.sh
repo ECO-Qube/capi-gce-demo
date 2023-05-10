@@ -22,4 +22,5 @@ clusterctl generate cluster capi-quickstart --flavor development \
   > capi-quickstart.yaml
 
 kubectl apply -f capi-quickstart.yaml
+kubectl apply -f capi-quickstart-cluster.yaml
 watch -n 1 kubectl get kubeadmcontrolplane

@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: 25-cpu-stresstest-cron
+  namespace: default
+spec:
+  template:
+    metadata:
+      labels:
+        app: 25-cpu-stresstest-cron
+    spec:
+      containers:
+        - name: 25-cpu-stresstest-cron
+          image: petarmaric/docker.cpu-stress-test
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MAX_CPU_CORES
+              value: '1'
+            - name: STRESS_SYSTEM_FOR
+              value: 1m
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 250m
+      restartPolicy: Never
+      nodeSelector:
+        ecoqube.eu/wkld-type: cpu
+  backoffLimit: 4
