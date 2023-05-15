@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cpu-stress-job-proto2
+  namespace: default
+spec:
+  template:
+    metadata:
+      labels:
+        app: cpu-stress-job-proto
+        telemetry-policy: schedule-until-at-capacity
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: schedule-until-at-capacity
+                    operator: NotIn
+                    values:
+                      - violating
+      containers:
+        - name: cpu-stress-job-proto
+          image: petarmaric/docker.cpu-stress-test
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MAX_CPU_CORES
+              value: '1'
+            - name: STRESS_SYSTEM_FOR
+              value: 1m
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 250m
+              telemetry/scheduling: "1"
+      restartPolicy: Never
+  backoffLimit: 4
