@@ -84,7 +84,11 @@ data:
     \     resources:\n        overrides:\n          instance:\n            resource:
     node\n      name:\n        matches: '.*'\n        as: \"node_fake_energy_target_diff\"\n
     \     metricsQuery: avg by (instance) (label_replace(fake_energy_target, \"instance\",
-    \"$1\", \"exported_instance\", \"(.*)\")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n---\n#
+    \"$1\", \"exported_instance\", \"(.*)\")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))\n
+    \     # Schedulable metric true/false for nodes\n    - seriesQuery: '{__name__=\"schedulable\"}'\n
+    \     resources:\n        overrides:\n          instance:\n            resource:
+    node\n      name:\n        matches: '.*'\n        as: \"node_schedulable\"\n      metricsQuery:
+    label_replace(schedulable, \"instance\", \"$1\", \"exported_instance\", \"(.*)\")\n---\n#
     Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-resource-reader-cluster-role.yaml\napiVersion:
     rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: custom-metrics-resource-reader\nrules:\n-
     apiGroups:\n  - \"\"\n  resources:\n  - namespaces\n  - pods\n  - services\n  -

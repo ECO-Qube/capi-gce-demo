@@ -65,6 +65,8 @@ data:
       rules:
       - record: node_cpu_utilization
         expr: 100 - 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
+      - record: node_cpu_diff
+        expr: avg by (instance) (label_replace(fake_energy_target, "instance", "$1", "exported_instance", "(.*)")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
   prometheus.yml: |-
     global:
       scrape_interval: 5s
@@ -189,7 +191,7 @@ data:
           replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 ---
 # Source: prometheus_helm_chart/templates/prometheus-deployment.yaml
-apiVersion: apps/v1 
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus-deployment
@@ -222,7 +224,7 @@ spec:
           configMap:
             defaultMode: 420
             name: prometheus-server-conf
-  
+
         - name: prometheus-storage-volume
           emptyDir: {}
 ---
@@ -233,12 +235,12 @@ metadata:
   name: prometheus-service
   namespace: monitoring
 spec:
-  selector: 
+  selector:
     app: prometheus-server
-  type: NodePort  
+  type: NodePort
   ports:
    -  targetPort: 9090
-      port: 8080 
+      port: 8080
       nodePort: 30000
 ---
 # Source: prometheus_helm_chart/templates/prometheus-service.yaml
@@ -249,14 +251,14 @@ metadata:
   namespace: monitoring
   labels:
     app: prometheus-server
-  
+
   annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/path:   /metrics
       prometheus.io/port:   '9090'
 spec:
   ports:
-  - port: 9090 
+  - port: 9090
     targetPort: 9090
     protocol: TCP
   selector:

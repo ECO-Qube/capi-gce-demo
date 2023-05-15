@@ -259,6 +259,16 @@ data:
         matches: '.*'
         as: "node_fake_energy_target_diff"
       metricsQuery: avg by (instance) (label_replace(fake_energy_target, "instance", "$1", "exported_instance", "(.*)")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
+      # Schedulable metric true/false for nodes
+    - seriesQuery: '{__name__="schedulable"}'
+      resources:
+        overrides:
+          instance:
+            resource: node
+      name:
+        matches: '.*'
+        as: "node_schedulable"
+      metricsQuery: label_replace(schedulable, "instance", "$1", "exported_instance", "(.*)")
 ---
 # Source: prometheus_custom_metrics_helm_chart/templates/custom-metrics-resource-reader-cluster-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
