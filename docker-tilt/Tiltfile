@@ -1,0 +1,31 @@
+# Init environment variables and configurations. Please modify here if needed.
+
+os.putenv("CAPI_KIND_CLUSTER_NAME", "ecoqube-dev")
+os.putenv("KIND_CLUSTER_VERSION", "v1.27.1")
+
+os.putenv("CLUSTER_TOPOLOGY", "true")
+os.putenv("EXP_CLUSTER_RESOURCE_SET", "true")
+
+# First, create a kind cluster
+local('./hack/kind-install-for-capd.sh')
+# Init CAPD provider
+#local('clusterctl init --infrastructure docker')
+# Apply cluster resources
+
+k8s_yaml([
+    "./templates/crs/calico-configmap.yaml",
+    "./templates/crs/custom-metrics-configmap.yaml",
+    "./templates/crs/custom-metrics-tls-secret-configmap.yaml",
+    "./templates/crs/prometheus-configmap.yaml",
+    "./templates/crs/prometheus-node-exporter-configmap.yaml",
+    "./templates/crs/scheduler-extender-configmap.yaml",
+    "./templates/crs/tas-configmap.yaml",
+    "./templates/crs/tas-tls-secret-configmap.yaml",
+])
+
+local("sleep 5")
+k8s_yaml("./templates/crs/clusterresourcesets.yaml")
+local("sleep 5")
+k8s_yaml("./templates/capd/clusterclass-ecoqube-dev.yaml")
+local("sleep 5")
+k8s_yaml("./templates/capd/cluster-template-ecoqube-dev.yaml", allow_duplicates=True)

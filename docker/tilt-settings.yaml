@@ -1,0 +1,11 @@
+default_registry: kind-registry:5000
+enable_providers:
+  - docker
+  - kubeadm-bootstrap
+  - kubeadm-control-plane
+kustomize_substitutions:
+  CLUSTER_TOPOLOGY: "true"
+  EXP_CLUSTER_RESOURCE_SET: "true"
+template_dirs:
+  docker:
+    - ./templates/capd
