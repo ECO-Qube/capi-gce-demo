@@ -32,7 +32,7 @@ if [[ "${TRACE-0}" == "1" ]]; then
     set -o xtrace
 fi
 
-KIND_CLUSTER_NAME=${CAPI_KIND_CLUSTER_NAME:-"capi-test"}
+KIND_CLUSTER_NAME=${CAPI_KIND_CLUSTER_NAME:-"kind"}
 KIND_CLUSTER_VERSION=${KIND_CLUSTER_VERSION:-"v1.27.1"}
 
 

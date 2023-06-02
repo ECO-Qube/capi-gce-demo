@@ -1,15 +1,25 @@
 # Init environment variables and configurations. Please modify here if needed.
 
-os.putenv("CAPI_KIND_CLUSTER_NAME", "ecoqube-dev")
-os.putenv("KIND_CLUSTER_VERSION", "v1.27.1")
+settings = {
+    "kind_cluster_name": os.getenv("CAPI_KIND_CLUSTER_NAME", "capi-test"),
+    "kind_cluster_version": os.putenv("KIND_CLUSTER_VERSION", "v1.27.1")
+}
+
+#os.putenv("KUBECONFIG", "/home/criscola/.kube/config")
 
 os.putenv("CLUSTER_TOPOLOGY", "true")
 os.putenv("EXP_CLUSTER_RESOURCE_SET", "true")
 
 # First, create a kind cluster
-local('./hack/kind-install-for-capd.sh')
+# DOESNT WORK https://kubernetes.slack.com/archives/CESBL84MV/p1685711786809659
+#local('./hack/kind-install-for-capd.sh')
+#local("kind create cluster --name={kind_cluster_name} --image='kindest/node:{kind_cluster_version}'".format(
+#    kind_cluster_name = settings.kind_cluster_name,
+#    kind_cluster_version = settings.kind_cluster_version)
+#)
+
 # Init CAPD provider
-#local('clusterctl init --infrastructure docker')
+local('clusterctl init --infrastructure docker')
 # Apply cluster resources
 
 k8s_yaml([
@@ -21,11 +31,18 @@ k8s_yaml([
     "./templates/crs/scheduler-extender-configmap.yaml",
     "./templates/crs/tas-configmap.yaml",
     "./templates/crs/tas-tls-secret-configmap.yaml",
+    "./templates/crs/clusterresourcesets.yaml",
+    "./templates/capd/clusterclass-ecoqube-dev.yaml",
+    "./templates/capd/cluster-template-ecoqube-dev.yaml"
 ])
 
-local("sleep 5")
-k8s_yaml("./templates/crs/clusterresourcesets.yaml")
-local("sleep 5")
-k8s_yaml("./templates/capd/clusterclass-ecoqube-dev.yaml")
-local("sleep 5")
-k8s_yaml("./templates/capd/cluster-template-ecoqube-dev.yaml", allow_duplicates=True)
+local_resource("wait-for-cert-addons-webhook",
+  cmd="kubectl wait --for=condition=Available --timeout=30s apiservice v1alpha3.addons.cluster.x-k8s.io",
+)
+
+
+#k8s_resource("ecoqube-tas-control-plane:kubeadmcontrolplanetemplate", pod_readiness='ignore')
+
+#cluster_probe = probe(period_secs=2, initial_delay_secs=30, timeout_secs=5*60, exec=exec_action(["kubectl get kubeadmcontrolplane -o=jsonpath='{range .items[*]}{.status.ready}{end}' | grep true"]))
+
+#local_resource(name="kubeconfig",cmd="clusterctl get kubeconfig ecoqube-dev > ecoqube-dev.kubeconfig", readiness_probe=cluster_probe)
