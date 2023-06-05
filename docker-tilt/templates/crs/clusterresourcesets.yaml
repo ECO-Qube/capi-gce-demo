@@ -1,4 +1,4 @@
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: prometheus
@@ -10,7 +10,7 @@ spec:
     - kind: ConfigMap
       name: prometheus-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: prometheus-node-exporter
@@ -22,7 +22,7 @@ spec:
     - kind: ConfigMap
       name: prometheus-node-exporter-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: custom-metrics
@@ -34,7 +34,7 @@ spec:
     - kind: ConfigMap
       name: custom-metrics-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: custom-metrics-tls-secret
@@ -46,7 +46,7 @@ spec:
     - kind: ConfigMap
       name: custom-metrics-tls-secret-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: tas
@@ -58,7 +58,7 @@ spec:
     - kind: ConfigMap
       name: tas-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: tas-tls-secret
@@ -70,7 +70,7 @@ spec:
     - kind: ConfigMap
       name: tas-tls-secret-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: extender
@@ -82,7 +82,7 @@ spec:
     - kind: ConfigMap
       name: extender-configmap
 ---
-apiVersion: addons.cluster.x-k8s.io/v1alpha3
+apiVersion: addons.cluster.x-k8s.io/v1beta1
 kind: ClusterResourceSet
 metadata:
   name: calico
