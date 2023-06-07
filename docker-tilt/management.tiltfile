@@ -1,12 +1,10 @@
-consts = {
-    "kinds": ["ClusterResourceSet"],
-    "crs_names": ["prometheus", "prometheus-node-exporter", "custom-metrics", "custom-metrics-tls-secret", "tas", "tas-tls-secret", "extender", "calico"]
-}
+# Load common constants
+load("consts.tiltfile", 'consts')
 
 # Init CAPD provider
 local('clusterctl init --infrastructure docker')
 
-# Apply cluster resources
+# Register resources from YAMLs
 k8s_yaml([
     "./templates/crs/calico-configmap.yaml",
     "./templates/crs/custom-metrics-configmap.yaml",
@@ -21,16 +19,28 @@ k8s_yaml([
     "./templates/capd/cluster-template-ecoqube-dev.yaml"
 ])
 
+# Register all kinds of interest
 for kind in consts.get("kinds"):
     k8s_kind(kind)
 
+# Wait for CAPI to be ready
 local_resource("wait-for-capi-control-plane-readiness",
   cmd="kubectl wait --for=condition=Ready --timeout=60s pod -l control-plane=controller-manager --all-namespaces",
 )
 
+# Register all k8s resources from CAPI
+for capi in consts.get("capi_names"):
+    k8s_resource("{}".format(capi), labels=["capi"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
+
+
+# Register all ClusterResourceSets
 for crs in consts.get("crs_names"):
     k8s_resource("{}".format(crs), labels=["crs"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
 
-#k8s_resource("ecoqube-tas-control-plane:kubeadmcontrolplanetemplate", pod_readiness='ignore')
-#cluster_probe = probe(period_secs=2, initial_delay_secs=30, timeout_secs=5*60, exec=exec_action(["kubectl get kubeadmcontrolplane -o=jsonpath='{range .items[*]}{.status.ready}{end}' | grep true"]))
-#local_resource(name="kubeconfi g",cmd="clusterctl get kubeconfig ecoqube-dev > ecoqube-dev.kubeconfig", readiness_probe=cluster_probe)
+local_resource("wait-for-capi-cluster-readiness",
+  cmd="kubectl wait --for=condition=Ready --timeout=5m cluster {}".format(consts.get("wkld_cluster_name")),
+  resource_deps=["ecoqube-wkld-dev"])
+
+
+local_resource(name="kubeconfig", cmd="clusterctl get kubeconfig {0} > {0}.kubeconfig".format(consts.get("wkld_cluster_name")),
+  resource_deps=["wait-for-capi-cluster-readiness"])
