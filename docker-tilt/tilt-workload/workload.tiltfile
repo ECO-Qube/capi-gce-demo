@@ -1,2 +1,7 @@
-load("../consts.tiltfile", 'consts')
+load("../consts.tiltfile", "consts")
 
+allow_k8s_contexts("{0}-admin@{0}".format(consts.get("wkld_cluster_name")))
+
+k8s_yaml("nginx.yaml")
+
+k8s_resource(workload="nginx", port_forwards=8080)

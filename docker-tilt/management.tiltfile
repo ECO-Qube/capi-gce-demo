@@ -37,10 +37,14 @@ for capi in consts.get("capi_names"):
 for crs in consts.get("crs_names"):
     k8s_resource("{}".format(crs), labels=["crs"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
 
+# Wait for Cluster to be ready
 local_resource("wait-for-capi-cluster-readiness",
   cmd="kubectl wait --for=condition=Ready --timeout=5m cluster {}".format(consts.get("wkld_cluster_name")),
   resource_deps=["ecoqube-wkld-dev"])
 
-
+# Get kubeconfig once Cluster is ready
 local_resource(name="kubeconfig", cmd="clusterctl get kubeconfig {0} > {0}.kubeconfig".format(consts.get("wkld_cluster_name")),
   resource_deps=["wait-for-capi-cluster-readiness"])
+
+# Start tilt for workload cluster
+local_resource("tilt-workload", serve_cmd="make tilt-workload-up", resource_deps=["kubeconfig"])
