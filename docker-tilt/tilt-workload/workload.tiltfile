@@ -1,3 +1,4 @@
+load('ext://kubectl_build', 'kubectl_build')
 load("../consts.tiltfile", "consts")
 
 # Return a list containing the result of local(command) split by newlines.
@@ -22,7 +23,15 @@ for i in range(0, len(node_names)):
   config_targets.append("config.targets.{}={}".format(node_names[i], random_targets[i]))
 
 kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
-local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
+if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
+  print("kubeconfig has changed")
+  local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
+
+kubectl_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
 
 k8s_yaml("ns.yaml")
 k8s_yaml(helm("./target-exporter/charts/target-exporter", "target-exporter", namespace="target-exporter", set=config_targets))
+k8s_resource(
+  "target-exporter", port_forwards=8080
+)
+#local_resource("prometheus port-forward", serve_cmd="kubectl port-forward -n monitoring svc/prom-service 9090:9090")
