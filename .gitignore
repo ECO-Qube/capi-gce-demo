@@ -2,3 +2,5 @@
 ubuntu-2004-kube-v1.25.0
 *-openrc.sh
 clouds.yaml
+docker-tilt/tilt-workload/target-exporter
+docker-tilt/tilt-workload/job-submission-platform
