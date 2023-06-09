@@ -17,10 +17,10 @@ data:
     \   metadata:\n      labels:\n        app: custom-metrics-apiserver\n      name:
     custom-metrics-apiserver\n    spec:\n      serviceAccountName: custom-metrics-apiserver\n
     \     containers:\n      - name: custom-metrics-apiserver\n        image: directxman12/k8s-prometheus-adapter-amd64\n
-    \       args:\n        - --secure-port=6443\n        - --tls-cert-file=/var/run/serving-cert/tls.crt\n
-    \       - --tls-private-key-file=/var/run/serving-cert/tls.key\n        - --logtostderr=true\n
-    \       - --prometheus-url=http://prom-service.monitoring.svc:9090/\n        -
-    --metrics-relist-interval=1m\n        - --v=10\n        - --config=/etc/adapter/config.yaml\n
+    \       imagePullPolicy: IfNotPresent\n        args:\n        - --secure-port=6443\n
+    \       - --tls-cert-file=/var/run/serving-cert/tls.crt\n        - --tls-private-key-file=/var/run/serving-cert/tls.key\n
+    \       - --logtostderr=true\n        - --prometheus-url=http://prom-service.monitoring.svc:9090/\n
+    \       - --metrics-relist-interval=1m\n        - --v=10\n        - --config=/etc/adapter/config.yaml\n
     \       ports:\n        - containerPort: 6443\n        volumeMounts:\n        -
     mountPath: /var/run/serving-cert\n          name: volume-serving-cert\n          readOnly:
     true\n        - mountPath: /etc/adapter/\n          name: config\n          readOnly:

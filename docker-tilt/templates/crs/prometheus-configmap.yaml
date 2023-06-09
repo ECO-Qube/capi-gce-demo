@@ -71,7 +71,7 @@ data:
     monitoring\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: prometheus-server\n
     \ template:\n    metadata:\n      labels:\n        app: prometheus-server\n    spec:\n
     \     containers:\n        - name: prometheus\n          image: prom/prometheus:v2.2.1\n
-    \         args:\n            - \"--config.file=/etc/prometheus/prometheus.yml\"\n
+    \         imagePullPolicy: IfNotPresent\n          args:\n            - \"--config.file=/etc/prometheus/prometheus.yml\"\n
     \           - \"--storage.tsdb.path=/prometheus/\"\n          ports:\n            -
     containerPort: 9090\n          volumeMounts:\n            - name: prometheus-config-volume\n
     \             mountPath: /etc/prometheus/\n            - name: prometheus-storage-volume\n
