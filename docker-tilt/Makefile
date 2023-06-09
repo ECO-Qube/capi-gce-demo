@@ -11,15 +11,22 @@ CURDIR = $(shell pwd)
 all: tilt-prepare tilt-management-up
 
 tilt-prepare:
-	./hack/kind-install-for-capd.sh
+	unset KUBECONFIG && ./hack/kind-install-for-capd.sh
 
 tilt-management-up: tilt-prepare
-	tilt up --file=management.tiltfile --port="10350"
+	kubectl config set-context kind-ecoqube-mgmt-dev-admin@kind-ecoqube-mgmt-dev && tilt up --file=management.tiltfile --port="10350"
 
 tilt-workload-up:
-	export KUBECONFIG="${CURDIR}/${CAPI_WKLD_CLUSTER_NAME}.kubeconfig" && cd tilt-workload && tilt up --file=workload.tiltfile --port="10351"
+	export KUBECONFIG="${CURDIR}/${CAPI_WKLD_CLUSTER_NAME}.kubeconfig" && \
+	kubectl config set-context ${CAPI_WKLD_CLUSTER_NAME}-admin@${CAPI_WKLD_CLUSTER_NAME} && \
+	cd tilt-workload && \
+	tilt up --file=workload.tiltfile --port="10351"
 
 clean:
 	kind delete cluster --name=${CAPI_KIND_CLUSTER_NAME}
 	kind delete cluster --name=${CAPI_WKLD_CLUSTER_NAME}
 	docker ps --filter name="kind-registry" -aq | xargs docker stop | xargs docker rm
+	unset KUBECONFIG
+	kubectl config unset clusters.kind-${CAPI_KIND_CLUSTER_NAME}
+	kubectl config unset users.kind-${CAPI_KIND_CLUSTER_NAME}
+	kubectl config unset contexts.kind-${CAPI_KIND_CLUSTER_NAME}-admin@kind-${CAPI_KIND_CLUSTER_NAME}

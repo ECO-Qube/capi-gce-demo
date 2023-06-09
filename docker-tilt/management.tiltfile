@@ -1,5 +1,6 @@
 # Load common constants
 load("consts.tiltfile", 'consts')
+wkld_cluster_name = consts.get("wkld_cluster_name")
 
 # Init CAPD provider
 local('clusterctl init --infrastructure docker')
@@ -30,21 +31,28 @@ local_resource("wait-for-capi-control-plane-readiness",
 
 # Register all k8s resources from CAPI
 for capi in consts.get("capi_names"):
-    k8s_resource("{}".format(capi), labels=["capi"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
+    k8s_resource(capi, labels=["capi"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
 
 
 # Register all ClusterResourceSets
 for crs in consts.get("crs_names"):
-    k8s_resource("{}".format(crs), labels=["crs"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
+    k8s_resource(crs, labels=["crs"], pod_readiness='ignore', resource_deps=["wait-for-capi-control-plane-readiness"])
 
 # Wait for Cluster to be ready
 local_resource("wait-for-capi-cluster-readiness",
-  cmd="kubectl wait --for=condition=Ready --timeout=5m cluster {}".format(consts.get("wkld_cluster_name")),
+  cmd="kubectl wait --for=condition=Ready --timeout=5m cluster {}".format(wkld_cluster_name),
   resource_deps=["ecoqube-wkld-dev"])
 
 # Get kubeconfig once Cluster is ready
-local_resource(name="kubeconfig", cmd="clusterctl get kubeconfig {0} > {0}.kubeconfig".format(consts.get("wkld_cluster_name")),
+local_resource(name="kubeconfig", cmd="clusterctl get kubeconfig {0} > {0}.kubeconfig".format(wkld_cluster_name),
   resource_deps=["wait-for-capi-cluster-readiness"])
 
-# Start tilt for workload cluster
-local_resource("tilt-workload", serve_cmd="make tilt-workload-up", resource_deps=["kubeconfig"])
+# This is mainly for development of the development tool to avoid DockerHub rate-limiting (docker login first!), usually disabled
+local_resource("load-kind-images", cmd="./hack/kind-load-images.sh", resource_deps=["wait-for-capi-cluster-readiness"])
+
+# Wait for MachineDeployment to be ready, otherwise race condition with nodes being ready / kubectl get nodes in workload.tiltfile
+local_resource("wait-for-machinedeployment-readiness",
+  cmd="kubectl wait --for=condition=Ready --timeout=5m machinedeployment -l cluster.x-k8s.io/cluster-name={}".format(wkld_cluster_name),
+  resource_deps=["wait-for-capi-cluster-readiness"])
+
+local_resource("tilt-workload", serve_cmd="make tilt-workload-up", resource_deps=["wait-for-machinedeployment-readiness"])

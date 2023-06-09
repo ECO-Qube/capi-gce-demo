@@ -1,7 +1,28 @@
 load("../consts.tiltfile", "consts")
 
+# Return a list containing the result of local(command) split by newlines.
+def local_as_list(command):
+   return str(local(command)).rstrip("\n").split("\n")
+
 allow_k8s_contexts("{0}-admin@{0}".format(consts.get("wkld_cluster_name")))
 
-k8s_yaml("nginx.yaml")
+if not os.path.exists("target-exporter"):
+  fail('Please "git clone" the target-exporter repo in folder "tilt-workload".')
 
-k8s_resource(workload="nginx", port_forwards=8080)
+if not os.path.exists("job-submission-platform"):
+  fail('Please "git clone" the job-submission-platform repo in folder "tilt-workload".')
+
+# Deploy target-exporter
+# Inject node names
+nodes_name_prefix = "{}-{}".format(consts.get("wkld_cluster_name"), consts.get("machinedeploy_name"))
+node_names = local_as_list("kubectl get nodes -o custom-columns=NAME:.metadata.name | grep {}".format(nodes_name_prefix))
+random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
+config_targets = []
+for i in range(0, len(node_names)):
+  config_targets.append("config.targets.{}={}".format(node_names[i], random_targets[i]))
+
+kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
+local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
+
+k8s_yaml("ns.yaml")
+k8s_yaml(helm("./target-exporter/charts/target-exporter", "target-exporter", namespace="target-exporter", set=config_targets))
