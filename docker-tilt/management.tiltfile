@@ -17,7 +17,7 @@ k8s_yaml([
     "./templates/crs/tas-tls-secret-configmap.yaml",
     "./templates/crs/clusterresourcesets.yaml",
     "./templates/capd/clusterclass-ecoqube-dev.yaml",
-    "./templates/capd/cluster-template-ecoqube-dev.yaml"
+    "./templates/capd/cluster-ecoqube-dev.yaml"
 ])
 
 # Register all kinds of interest
@@ -47,7 +47,7 @@ local_resource("wait-for-capi-cluster-readiness",
 local_resource(name="kubeconfig", cmd="clusterctl get kubeconfig {0} > {0}.kubeconfig".format(wkld_cluster_name),
   resource_deps=["wait-for-capi-cluster-readiness"])
 
-# This is mainly for development of the development tool to avoid DockerHub rate-limiting (docker login first!), usually disabled
+# This is mainly for development of Tilt to avoid DockerHub rate-limiting and speeding up a bit image pulls
 local_resource("load-kind-images", cmd="./hack/kind-load-images.sh", resource_deps=["wait-for-capi-cluster-readiness"])
 
 # Wait for MachineDeployment to be ready, otherwise race condition with nodes being ready / kubectl get nodes in workload.tiltfile
@@ -55,4 +55,4 @@ local_resource("wait-for-machinedeployment-readiness",
   cmd="kubectl wait --for=condition=Ready --timeout=5m machinedeployment -l cluster.x-k8s.io/cluster-name={}".format(wkld_cluster_name),
   resource_deps=["wait-for-capi-cluster-readiness"])
 
-local_resource("tilt-workload", serve_cmd="make tilt-workload-up", resource_deps=["wait-for-machinedeployment-readiness"])
+local_resource("tilt-workload", serve_cmd="make tilt-workload-up", resource_deps=["wait-for-machinedeployment-readiness"], links=["http://localhost:10351/"])

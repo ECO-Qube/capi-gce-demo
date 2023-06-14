@@ -328,6 +328,14 @@ spec:
                       "value": "ClusterFirstWithHostNet"
                   }
               ]
+          - path: /etc/containerd/config.toml
+            append: true
+            content: |-
+              [plugins."io.containerd.grpc.v1.cri".registry]
+                config_path = "/etc/containerd/certs.d"
+          - path: "/etc/containerd/certs.d/localhost:5000"
+            content: |
+              [host."http://kind-registry:5000"]
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerMachineTemplate
@@ -362,3 +370,12 @@ spec:
         nodeRegistration:
           kubeletExtraArgs:
             eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
+      files:
+        - path: /etc/containerd/config.toml
+          append: true
+          content: |-
+            [plugins."io.containerd.grpc.v1.cri".registry]
+              config_path = "/etc/containerd/certs.d"
+        - path: "/etc/containerd/certs.d/localhost:5000/hosts.toml"
+          content: |
+            [host."http://kind-registry:5000"]

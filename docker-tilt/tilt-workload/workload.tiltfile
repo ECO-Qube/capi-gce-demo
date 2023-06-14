@@ -1,5 +1,7 @@
-load('ext://kubectl_build', 'kubectl_build')
 load("../consts.tiltfile", "consts")
+
+# Set autoreload only manual
+#trigger_mode(TRIGGER_MODE_MANUAL)
 
 # Return a list containing the result of local(command) split by newlines.
 def local_as_list(command):
@@ -12,6 +14,8 @@ if not os.path.exists("target-exporter"):
 
 if not os.path.exists("job-submission-platform"):
   fail('Please "git clone" the job-submission-platform repo in folder "tilt-workload".')
+
+#k8s_yaml("test.yaml")
 
 # Deploy target-exporter
 # Inject node names
@@ -27,11 +31,18 @@ if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/
   print("kubeconfig has changed")
   local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
 
-kubectl_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
+docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
 
 k8s_yaml("ns.yaml")
 k8s_yaml(helm("./target-exporter/charts/target-exporter", "target-exporter", namespace="target-exporter", set=config_targets))
+
 k8s_resource(
   "target-exporter", port_forwards=8080
 )
-#local_resource("prometheus port-forward", serve_cmd="kubectl port-forward -n monitoring svc/prom-service 9090:9090")
+
+docker_build("docker.io/cristianohelio/job-submission-platform", "./job-submission-platform")
+
+k8s_yaml(helm("./job-submission-platform/charts/job-submission-platform", "job-submission-platform", namespace="job-submission-platform"))
+k8s_resource(
+  "job-submission-platform", port_forwards=3000
+)
