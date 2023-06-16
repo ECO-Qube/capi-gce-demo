@@ -1,3 +1,5 @@
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
+load('ext://restart_process', 'docker_build_with_restart')
 load("../consts.tiltfile", "consts")
 
 # Set autoreload only manual
@@ -24,17 +26,59 @@ node_names = local_as_list("kubectl get nodes -o custom-columns=NAME:.metadata.n
 random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
 config_targets = []
 for i in range(0, len(node_names)):
-  config_targets.append("config.targets.{}={}".format(node_names[i], random_targets[i]))
+  config_targets.append("--set config.targets.{}={}".format(node_names[i], random_targets[i]))
+
+config_targets_param = " ".join(config_targets)
 
 kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
 if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
   print("kubeconfig has changed")
   local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
 
-docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
+# Target exporter deployment
 
-k8s_yaml("ns.yaml")
-k8s_yaml(helm("./target-exporter/charts/target-exporter", "target-exporter", namespace="target-exporter", set=config_targets))
+local_resource(
+  "target-exporter-compile",
+  "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/target-exporter -C ./target-exporter",
+  deps=['./target-exporter/main.go', './target-exporter/pkg'])
+
+#docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
+# docker_build("docker.io/cristianohelio/target-exporter", 
+#   context="./target-exporter", 
+#   dockerfile="./target-exporter/Dockerfile.dev",
+#   entrypoint="/app/build/target-exporter", 
+#   only=["./target-exporter/pkg", "./target-exporter/main.go"],
+#   live_update=[
+#     sync("./target-exporter/build/target-exporter", "/app/build")
+#   ]
+# )
+
+local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
+
+# docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter", dockerfile="./target-exporter/Dockerfile.dev",
+#   only=["./target-exporter/build"],
+#   entrypoint="/app/build/target-exporter", live_update=[sync("./target-exporter/build/target-exporter", "/app/build")]
+# )
+
+docker_build("docker.io/cristianohelio/target-exporter", 
+  context="target-exporter", 
+  dockerfile="./target-exporter/Dockerfile.dev",
+  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
+
+
+# Pain: how to not duplicate Helm's logic? At first, it works fine because it rebuilds the whole image and applies the helm resource,
+# but then it applies live reloading and it fucks up since Helm is bypassed; the dev image is built and the binary copied over.
+# The problem is that I have some logic in the helm chart regarding building of the config and parameters to pass, I wouldn't
+# want to have them in 2 places now. I could fix this by rewriting some code to generate the config myself + adding the 
+# target-exporter flags in the entrypoint, but of course that would entail that I need to keep both tilt and helm chart in sync 
+# in the future.
+helm_resource("target-exporter", 
+  "./target-exporter/charts/target-exporter", 
+  namespace="target-exporter",
+  image_deps=["docker.io/cristianohelio/target-exporter"],
+  image_keys=[('image.repository', 'image.tag')],  
+  flags=["--create-namespace", config_targets_param]
+)
 
 k8s_resource(
   "target-exporter", port_forwards=8080
