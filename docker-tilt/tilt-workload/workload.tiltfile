@@ -17,8 +17,6 @@ if not os.path.exists("target-exporter"):
 if not os.path.exists("job-submission-platform"):
   fail('Please "git clone" the job-submission-platform repo in folder "tilt-workload".')
 
-#k8s_yaml("test.yaml")
-
 # Deploy target-exporter
 # Inject node names
 nodes_name_prefix = "{}-{}".format(consts.get("wkld_cluster_name"), consts.get("machinedeploy_name"))
@@ -40,39 +38,34 @@ if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/
   print("kubeconfig has changed")
   local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
 
-# Target exporter deployment
-
+# Target exporter local compiling
 local_resource(
   "target-exporter-compile",
   "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/target-exporter -C ./target-exporter",
   deps=['./target-exporter/main.go', './target-exporter/pkg'])
 
-#docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
-# docker_build("docker.io/cristianohelio/target-exporter",
-#   context="./target-exporter",
-#   dockerfile="./target-exporter/Dockerfile.dev",
-#   entrypoint="/app/build/target-exporter",
-#   only=["./target-exporter/pkg", "./target-exporter/main.go"],
-#   live_update=[
-#     sync("./target-exporter/build/target-exporter", "/app/build")
-#   ]
-# )
+# Generate
+targets = dict()
+targetsList = dict()
+for i in range(0, len(node_names)):
+  targetsList.update({node_names[i]: random_targets[i]})
 
+targets = {"targets": targetsList}
+targets = str(encode_yaml(targets))
+print(targetsList)
+
+local('echo "targetMetricName: fake_energy_target" > ./target-exporter/config-tilt.yaml')
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(targets))
 local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
-# docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter", dockerfile="./target-exporter/Dockerfile.dev",
-#   only=["./target-exporter/build"],
-#   entrypoint="/app/build/target-exporter", live_update=[sync("./target-exporter/build/target-exporter", "/app/build")]
-# )
-
-docker_build("docker.io/cristianohelio/target-exporter",
+docker_build_with_restart("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
-  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter"),
-    sync("target-exporter/charts/target-exporeter/ecoqube-dev.kubeconfig", "/root/.kube/config")])
-
+  entrypoint="/app/build/target-exporter --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090",
+  dockerfile="./target-exporter/Dockerfile.dev",
+  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
 
 # Pain: how to not duplicate Helm's logic? At first, it works fine because it rebuilds the whole image and applies the helm resource,
-# but then it applies live reloading and it fucks up since Helm is bypassed; the dev image is built and the binary copied over.
+# but then it applies live reloading and it messes up a bit since Helm is bypassed; the dev image is built and the binary copied over.
 # The problem is that I have some logic in the helm chart regarding building of the config and parameters to pass, I wouldn't
 # want to have them in 2 places now. I could fix this by rewriting some code to generate the config myself + adding the
 # target-exporter flags in the entrypoint, but of course that would entail that I need to keep both tilt and helm chart in sync
