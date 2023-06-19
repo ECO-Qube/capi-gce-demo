@@ -12,7 +12,7 @@ k8s_yaml([
     "./templates/crs/custom-metrics-tls-secret-configmap.yaml",
     "./templates/crs/prometheus-configmap.yaml",
     "./templates/crs/prometheus-node-exporter-configmap.yaml",
-    "./templates/crs/scheduler-extender-configmap.yaml",
+    "./templates/crs/extender-configmap.yaml",
     "./templates/crs/tas-configmap.yaml",
     "./templates/crs/tas-tls-secret-configmap.yaml",
     "./templates/crs/clusterresourcesets.yaml",
