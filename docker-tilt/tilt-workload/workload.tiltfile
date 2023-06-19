@@ -26,9 +26,14 @@ node_names = local_as_list("kubectl get nodes -o custom-columns=NAME:.metadata.n
 random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
 config_targets = []
 for i in range(0, len(node_names)):
-  config_targets.append("--set config.targets.{}={}".format(node_names[i], random_targets[i]))
+  config_targets.append("--set")
+  config_targets.append("config.targets.{}={}".format(node_names[i], random_targets[i]))
 
-config_targets_param = " ".join(config_targets)
+
+args = ["--cors-disabled", "true", "--kubeconfig", "/kubeconfig/ecoqube-dev.kubeconfig"]
+for i in args:
+  config_targets.append("--create-namespace")
+
 
 kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
 if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
@@ -43,10 +48,10 @@ local_resource(
   deps=['./target-exporter/main.go', './target-exporter/pkg'])
 
 #docker_build("docker.io/cristianohelio/target-exporter", "./target-exporter")
-# docker_build("docker.io/cristianohelio/target-exporter", 
-#   context="./target-exporter", 
+# docker_build("docker.io/cristianohelio/target-exporter",
+#   context="./target-exporter",
 #   dockerfile="./target-exporter/Dockerfile.dev",
-#   entrypoint="/app/build/target-exporter", 
+#   entrypoint="/app/build/target-exporter",
 #   only=["./target-exporter/pkg", "./target-exporter/main.go"],
 #   live_update=[
 #     sync("./target-exporter/build/target-exporter", "/app/build")
@@ -60,24 +65,24 @@ local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 #   entrypoint="/app/build/target-exporter", live_update=[sync("./target-exporter/build/target-exporter", "/app/build")]
 # )
 
-docker_build("docker.io/cristianohelio/target-exporter", 
-  context="target-exporter", 
-  dockerfile="./target-exporter/Dockerfile.dev",
-  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
+docker_build("docker.io/cristianohelio/target-exporter",
+  context="target-exporter",
+  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter"),
+    sync("target-exporter/charts/target-exporeter/ecoqube-dev.kubeconfig", "/root/.kube/config")])
 
 
 # Pain: how to not duplicate Helm's logic? At first, it works fine because it rebuilds the whole image and applies the helm resource,
 # but then it applies live reloading and it fucks up since Helm is bypassed; the dev image is built and the binary copied over.
 # The problem is that I have some logic in the helm chart regarding building of the config and parameters to pass, I wouldn't
-# want to have them in 2 places now. I could fix this by rewriting some code to generate the config myself + adding the 
-# target-exporter flags in the entrypoint, but of course that would entail that I need to keep both tilt and helm chart in sync 
+# want to have them in 2 places now. I could fix this by rewriting some code to generate the config myself + adding the
+# target-exporter flags in the entrypoint, but of course that would entail that I need to keep both tilt and helm chart in sync
 # in the future.
-helm_resource("target-exporter", 
-  "./target-exporter/charts/target-exporter", 
+helm_resource("target-exporter",
+  "./target-exporter/charts/target-exporter",
   namespace="target-exporter",
   image_deps=["docker.io/cristianohelio/target-exporter"],
-  image_keys=[('image.repository', 'image.tag')],  
-  flags=["--create-namespace", config_targets_param]
+  image_keys=[('image.repository', 'image.tag')],
+  flags=config_targets
 )
 
 k8s_resource(
@@ -86,7 +91,14 @@ k8s_resource(
 
 docker_build("docker.io/cristianohelio/job-submission-platform", "./job-submission-platform")
 
-k8s_yaml(helm("./job-submission-platform/charts/job-submission-platform", "job-submission-platform", namespace="job-submission-platform"))
+helm_resource("job-submission-platform",
+  "./job-submission-platform/charts/job-submission-platform",
+  namespace="job-submission-platform",
+  image_deps=["docker.io/cristianohelio/job-submission-platform"],
+  image_keys=[('image.repository', 'image.tag')],
+  flags=["--create-namespace"]
+)
+
 k8s_resource(
   "job-submission-platform", port_forwards=3000
 )
