@@ -22,19 +22,9 @@ if not os.path.exists("job-submission-platform"):
 nodes_name_prefix = "{}-{}".format(consts.get("wkld_cluster_name"), consts.get("machinedeploy_name"))
 node_names = local_as_list("kubectl get nodes -o custom-columns=NAME:.metadata.name | grep {}".format(nodes_name_prefix))
 random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
-config_targets = []
-for i in range(0, len(node_names)):
-  config_targets.append("--set")
-  config_targets.append("config.targets.{}={}".format(node_names[i], random_targets[i]))
-
-
-args = ["--cors-disabled", "true", "--kubeconfig", "/kubeconfig/ecoqube-dev.kubeconfig"]
-for i in args:
-  config_targets.append("--create-namespace")
-
 
 kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
-if str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
+if not os.path.exists("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig") or str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
   print("kubeconfig has changed")
   local("cp ../{} target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig".format(kubeconfig))
 
@@ -44,7 +34,7 @@ local_resource(
   "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/target-exporter -C ./target-exporter",
   deps=['./target-exporter/main.go', './target-exporter/pkg'])
 
-# Generate
+# Create yaml from node names and inject them in target-exporter config
 targets = dict()
 targetsList = dict()
 for i in range(0, len(node_names)):
@@ -58,31 +48,25 @@ local('echo "targetMetricName: fake_energy_target" > ./target-exporter/config-ti
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(targets))
 local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
+target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
+
 docker_build_with_restart("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
-  entrypoint="/app/build/target-exporter --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090",
+  entrypoint="/app/build/target-exporter {}".format(target_exporter_args),
   dockerfile="./target-exporter/Dockerfile.dev",
   live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
 
-# Pain: how to not duplicate Helm's logic? At first, it works fine because it rebuilds the whole image and applies the helm resource,
-# but then it applies live reloading and it messes up a bit since Helm is bypassed; the dev image is built and the binary copied over.
-# The problem is that I have some logic in the helm chart regarding building of the config and parameters to pass, I wouldn't
-# want to have them in 2 places now. I could fix this by rewriting some code to generate the config myself + adding the
-# target-exporter flags in the entrypoint, but of course that would entail that I need to keep both tilt and helm chart in sync
-# in the future.
+# TODO: Eventually find out if helm_resource can be used with live reload in our setup
 helm_resource("target-exporter",
   "./target-exporter/charts/target-exporter",
   namespace="target-exporter",
   image_deps=["docker.io/cristianohelio/target-exporter"],
-  image_keys=[('image.repository', 'image.tag')],
-  flags=config_targets
+  image_keys=[('image.repository', 'image.tag')]
 )
 
 k8s_resource(
   "target-exporter", port_forwards=8080
 )
-
-docker_build("docker.io/cristianohelio/job-submission-platform", "./job-submission-platform")
 
 helm_resource("job-submission-platform",
   "./job-submission-platform/charts/job-submission-platform",
@@ -95,3 +79,13 @@ helm_resource("job-submission-platform",
 k8s_resource(
   "job-submission-platform", port_forwards=3000
 )
+
+# Add a live_update rule to our docker_build
+docker_build_with_restart('docker.io/cristianohelio/job-submission-platform',
+    context="job-submission-platform",
+    entrypoint='yarn start',
+    dockerfile="./job-submission-platform/Dockerfile.dev",
+    live_update=[
+        sync('job-submission-platform', '/app'),
+        run('cd /app && yarn install', trigger=['./package.json', './yarn.lock']),
+])
