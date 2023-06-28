@@ -50,7 +50,7 @@ local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
 target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
 
-docker_build_with_restart("docker.io/cristianohelio/target-exporter",
+docker_build("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
   entrypoint="/app/build/target-exporter {}".format(target_exporter_args),
   dockerfile="./target-exporter/Dockerfile.dev",
@@ -61,7 +61,8 @@ helm_resource("target-exporter",
   "./target-exporter/charts/target-exporter",
   namespace="target-exporter",
   image_deps=["docker.io/cristianohelio/target-exporter"],
-  image_keys=[('image.repository', 'image.tag')]
+  image_keys=[('image.repository', 'image.tag')],
+  flags=["--create-namespace"]
 )
 
 k8s_resource(

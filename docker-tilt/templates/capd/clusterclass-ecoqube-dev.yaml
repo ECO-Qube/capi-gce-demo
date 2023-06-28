@@ -286,16 +286,18 @@ spec:
             extraArgs: { enable-hostpath-provisioner: 'true' }
         initConfiguration:
           nodeRegistration:
-            criSocket: /var/run/containerd/containerd.sock
+            criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
+              fail-swap-on: "false"
           patches:
             directory: /etc/tas/patches
         joinConfiguration:
           nodeRegistration:
-            criSocket: /var/run/containerd/containerd.sock
+            criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
+              fail-swap-on: "false"
           patches:
             directory: /etc/tas/patches
         files:
@@ -368,8 +370,10 @@ spec:
     spec:
       joinConfiguration:
         nodeRegistration:
+          criSocket: unix:///var/run/containerd/containerd.sock
           kubeletExtraArgs:
             eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
+            fail-swap-on: "false"
       files:
         - path: /etc/containerd/config.toml
           append: true
