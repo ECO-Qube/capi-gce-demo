@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cpu-stress-pod
+
+spec:
+  containers:
+    - name: cpu-stress-container
+      image: petarmaric/docker.cpu-stress-test
+      env:
+        - name: MAX_CPU_CORES
+          value: "12"
+        - name: STRESS_SYSTEM_FOR
+          value: "10m"
+      resources:
+        requests:
+          cpu: "12"
+        limits:
+          cpu: "12"

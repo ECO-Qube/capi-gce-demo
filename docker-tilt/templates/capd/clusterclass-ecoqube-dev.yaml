@@ -128,52 +128,6 @@ spec:
       description: Sets the container image that is used for running dockerMachines
         for the controlPlane and default-worker machineDeployments.
       name: customImage
-    - definitions:
-        - jsonPatches:
-            - op: add
-              path: /spec/template/spec/kubeadmConfigSpec/clusterConfiguration/apiServer/extraArgs
-              value:
-                admission-control-config-file: /etc/kubernetes/kube-apiserver-admission-pss.yaml
-            - op: add
-              path: /spec/template/spec/kubeadmConfigSpec/clusterConfiguration/apiServer/extraVolumes
-              value:
-                - hostPath: /etc/kubernetes/kube-apiserver-admission-pss.yaml
-                  mountPath: /etc/kubernetes/kube-apiserver-admission-pss.yaml
-                  name: admission-pss
-                  pathType: File
-                  readOnly: true
-            - op: add
-              path: /spec/template/spec/kubeadmConfigSpec/files/-
-              valueFrom:
-                template: |
-                  content: |
-                    apiVersion: apiserver.config.k8s.io/v1
-                    kind: AdmissionConfiguration
-                    plugins:
-                    - name: PodSecurity
-                      configuration:
-                        apiVersion: pod-security.admission.config.k8s.io/v1beta1
-                        kind: PodSecurityConfiguration
-                        defaults:
-                          enforce: "{{ .podSecurityStandard.enforce }}"
-                          enforce-version: "latest"
-                          audit: "{{ .podSecurityStandard.audit }}"
-                          audit-version: "latest"
-                          warn: "{{ .podSecurityStandard.warn }}"
-                          warn-version: "latest"
-                        exemptions:
-                          usernames: []
-                          runtimeClasses: []
-                          namespaces: [kube-system]
-                  path: /etc/kubernetes/kube-apiserver-admission-pss.yaml
-          selector:
-            apiVersion: controlplane.cluster.x-k8s.io/v1beta1
-            kind: KubeadmControlPlaneTemplate
-            matchResources:
-              controlPlane: true
-      description: Adds an admission configuration for PodSecurity to the kube-apiserver.
-      enabledIf: '{{ .podSecurityStandard.enabled }}'
-      name: podSecurityStandard
   variables:
     - name: imageRepository
       required: true
@@ -266,6 +220,7 @@ spec:
           scheduler:
             extraArgs:
               config: "/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml"
+              feature-gates: "InPlacePodVerticalScaling=true"
             extraVolumes:
               - hostPath: "/etc/kubernetes/schedulerconfig"
                 mountPath: "/etc/kubernetes/schedulerconfig"
@@ -282,14 +237,19 @@ spec:
               - 127.0.0.1
               - 0.0.0.0
               - host.docker.internal
+            extraArgs:
+              feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kube-apiserver
           controllerManager:
-            extraArgs: { enable-hostpath-provisioner: 'true' }
+            extraArgs:
+              enable-hostpath-provisioner: 'true'
+              feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kube-controller-manager
         initConfiguration:
           nodeRegistration:
             criSocket: unix:///var/run/containerd/containerd.sock
             kubeletExtraArgs:
               eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
               fail-swap-on: "false"
+              feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on control plane nodes 1/2
           patches:
             directory: /etc/tas/patches
         joinConfiguration:
@@ -298,6 +258,7 @@ spec:
             kubeletExtraArgs:
               eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
               fail-swap-on: "false"
+              feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on control plane nodes 2/2
           patches:
             directory: /etc/tas/patches
         files:
@@ -374,6 +335,7 @@ spec:
           kubeletExtraArgs:
             eviction-hard: 'nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%'
             fail-swap-on: "false"
+            feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on worker nodes
       files:
         - path: /etc/containerd/config.toml
           append: true

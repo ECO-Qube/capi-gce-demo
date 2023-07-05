@@ -1,0 +1,52 @@
+root@ecoqube-wkld-dev-4m8xp-m992w:/# ps -ax
+    PID TTY      STAT   TIME COMMAND
+      1 ?        Ss     0:00 /sbin/init
+    113 ?        Ss     0:00 /lib/systemd/systemd-journald
+    751 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id 0592e3236e14cde8c23f415412c2d065eae834c637b5e3e022f2680a53390eaa -address /run/containerd/containerd.sock
+    752 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id af9c867971e1b1b8223226c44fba43cc557dc0ac3d4d99a12a1112474dc5a522 -address /run/containerd/containerd.sock
+    800 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id 92c3de843a491c9e29b760a4331472aa42961c22702e38bb88f4f2dfd76c7a53 -address /run/containerd/containerd.sock
+    809 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id c2247df98fcb4eeb47b5afb07d1ef048779492e5a71dd19386d0176952c7245c -address /run/containerd/containerd.sock
+    843 ?        Ss     0:00 /pause
+    849 ?        Ss     0:00 /pause
+    858 ?        Ss     0:00 /pause
+    865 ?        Ss     0:00 /pause
+    971 ?        Ssl    0:00 kube-scheduler --authentication-kubeconfig=/etc/kubernetes/scheduler.conf --authorization-kubeconfig=/etc/kubernetes/scheduler.conf --bind-address=127.0.0.1 --config=/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml
+    --feature-gates=InPlacePodVerticalScaling=true
+    --kubeconfig=/etc/kubernetes/scheduler.conf --leader-elect=true
+    980 ?        Ssl    0:11 kube-apiserver --admission-control-config-file=/etc/kubernetes/kube-apiserver-admission-pss.yaml --advertise-address=172.19.0.5 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.128.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+    988 ?        Ssl    0:01 kube-controller-manager --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --bind-address=127.0.0.1 --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=192.168.0.0/16 --cluster-name=ecoqube-wkld-dev --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --enable-hostpath-provisioner=true
+    --feature-gates=InPlacePodVerticalScaling=true
+    --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.128.0.0/12 --use-service-account-credentials=true
+   1131 ?        Ssl    0:03 etcd --advertise-client-urls=https://172.19.0.5:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --experimental-initial-corrupt-check=true --experimental-watch-progress-notify-interval=5s --initial-advertise-peer-urls=https://172.19.0.5:2380 --initial-cluster=ecoqube-wkld-dev-4m8xp-m992w=https://172.19.0.5:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://172.19.0.5:2379 --listen-metrics-urls=http://127.0.0.1:2381 --listen-peer-urls=https://172.19.0.5:2380 --name=ecoqube-wkld-dev-4m8xp-m992w --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+   1213 ?        Ssl    0:03 /usr/bin/kubelet --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --config=/var/lib/kubelet/config.yaml --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --eviction-hard=nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0% --fail-swap-on=false
+   --feature-gates=InPlacePodVerticalScaling=true --pod-infra-container-image=registry.k8s.io/pause:3.9
+   --runtime-cgroups=/system.slice/containerd.service
+   1737 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id 10666e893c66864e16919f08142b6b1d65ec626f776decd449d2999eaa989036 -address /run/containerd/containerd.sock
+   1739 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id 26753cadb0e79ba1e774eae11ab9a72a4453f8d35066845c48b1a40effe1e341 -address /run/containerd/containerd.sock
+   1783 ?        Ss     0:00 /pause
+   1791 ?        Ss     0:00 /pause
+   1882 ?        Ssl    0:00 /usr/local/bin/kube-proxy --config=/var/lib/kube-proxy/config.conf --hostname-override=ecoqube-wkld-dev-4m8xp-m992w
+   2433 ?        Ss     0:00 /usr/local/bin/runsvdir -P /etc/service/enabled
+   2543 ?        Ss     0:00 runsv monitor-addresses
+   2544 ?        Ss     0:00 runsv allocate-tunnel-addrs
+   2545 ?        Ss     0:00 runsv felix
+   2546 ?        Ss     0:00 runsv bird6
+   2547 ?        Ss     0:00 runsv confd
+   2548 ?        Ss     0:00 runsv node-status-reporter
+   2549 ?        Ss     0:00 runsv bird
+   2550 ?        Ss     0:00 runsv cni
+   2551 ?        Sl     0:00 calico-node -allocate-tunnel-addrs
+   2552 ?        Sl     0:00 calico-node -monitor-addresses
+   2554 ?        Sl     0:00 calico-node -felix
+   2555 ?        Sl     0:00 calico-node -confd
+   2557 ?        Sl     0:00 calico-node -monitor-token
+   2558 ?        Sl     0:00 calico-node -status-reporter
+   2784 ?        S      0:00 bird -R -s /var/run/calico/bird.ctl -d -c /etc/calico/confd/config/bird.cfg
+   2785 ?        S      0:00 bird6 -R -s /var/run/calico/bird6.ctl -d -c /etc/calico/confd/config/bird6.cfg
+   2975 ?        Sl     0:00 /usr/local/bin/containerd-shim-runc-v2 -namespace k8s.io -id d38cf6a00c68c91483a84f3a20a8a95f81a55c52ea8c55b109999dcb295bc7c4 -address /run/containerd/containerd.sock
+   2995 ?        Ss     0:00 /pause
+   3092 ?        Ssl    0:00 /extender --syncPeriod=2s --cert=/tas/cert/tls.crt --key=/tas/cert/tls.key --cacert=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt --v=2
+   4005 ?        Ssl    0:00 /usr/local/bin/containerd
+   4582 pts/1    Ss+    0:00 bash
+   4626 pts/2    Ss     0:00 bash
+   4669 pts/2    R+     0:00 ps -ax
