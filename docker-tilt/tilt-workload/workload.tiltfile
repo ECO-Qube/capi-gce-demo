@@ -31,7 +31,8 @@ if not os.path.exists("target-exporter/charts/target-exporter/ecoqube-dev.kubeco
 # Target exporter local compiling
 local_resource(
   "target-exporter-compile",
-  "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/target-exporter -C ./target-exporter",
+  'cd target-exporter/ && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o ./build/target-exporter ',
+# 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o ./build/target-exporter -C ./target-exporter',
   deps=['./target-exporter/main.go', './target-exporter/pkg'])
 
 # Create yaml from node names and inject them in target-exporter config
@@ -50,9 +51,9 @@ local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
 target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
 
-docker_build("docker.io/cristianohelio/target-exporter",
+docker_build_with_restart("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
-  entrypoint="/app/build/target-exporter {}".format(target_exporter_args),
+  entrypoint="/go/bin/dlv --continue --listen=0.0.0.0:5050 --api-version=2 --headless=true --only-same-user=false --accept-multiclient --check-go-version=false exec /app/build/target-exporter -- {}".format(target_exporter_args),
   dockerfile="./target-exporter/Dockerfile.dev",
   live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
 
@@ -66,7 +67,7 @@ helm_resource("target-exporter",
 )
 
 k8s_resource(
-  "target-exporter", port_forwards=8080
+  "target-exporter", port_forwards=["8080:8080", "5050:5050"] # 5050 is the debugger port
 )
 
 helm_resource("job-submission-platform",
