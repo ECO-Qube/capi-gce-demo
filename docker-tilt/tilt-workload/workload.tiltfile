@@ -32,7 +32,6 @@ if not os.path.exists("target-exporter/charts/target-exporter/ecoqube-dev.kubeco
 local_resource(
   "target-exporter-compile",
   'cd target-exporter/ && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o ./build/target-exporter ',
-# 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o ./build/target-exporter -C ./target-exporter',
   deps=['./target-exporter/main.go', './target-exporter/pkg'])
 
 # Create yaml from node names and inject them in target-exporter config
@@ -55,7 +54,12 @@ docker_build_with_restart("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
   entrypoint="/go/bin/dlv --continue --listen=0.0.0.0:5050 --api-version=2 --headless=true --only-same-user=false --accept-multiclient --check-go-version=false exec /app/build/target-exporter -- {}".format(target_exporter_args),
   dockerfile="./target-exporter/Dockerfile.dev",
-  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")])
+  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")],
+#  only=[
+#  './target-exporter/build',
+#  './target-exporter/config-tilt.yaml',
+#  ]
+)
 
 # TODO: Eventually find out if helm_resource can be used with live reload in our setup
 helm_resource("target-exporter",
