@@ -2,7 +2,7 @@
 ubuntu-2004-kube-v1.25.0
 *-openrc.sh
 clouds.yaml
-docker-tilt/tilt-workload/target-exporter
-docker-tilt/tilt-workload/job-submission-platform
+docker-tilt/tilt-workload/
+!docker-tilt/tilt-workload/workload.tiltfile
 docker-tilt/ecoqube-wkld-dev.kubeconfig
 docker/ecoqube-dev-cluster.yaml

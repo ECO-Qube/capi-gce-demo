@@ -17,6 +17,9 @@ if not os.path.exists("target-exporter"):
 if not os.path.exists("job-submission-platform"):
   fail('Please "git clone" the job-submission-platform repo in folder "tilt-workload".')
 
+if not os.path.exists("pyzhm"):
+  fail('Please "git clone" the pyZHM repo in folder "tilt-workload/pyzhm.')
+
 # Deploy target-exporter
 # Inject node names
 nodes_name_prefix = "{}-{}".format(consts.get("wkld_cluster_name"), consts.get("machinedeploy_name"))
@@ -54,10 +57,11 @@ docker_build_with_restart("docker.io/cristianohelio/target-exporter",
   context="target-exporter",
   entrypoint="/go/bin/dlv --continue --listen=0.0.0.0:5050 --api-version=2 --headless=true --only-same-user=false --accept-multiclient --check-go-version=false exec /app/build/target-exporter -- {}".format(target_exporter_args),
   dockerfile="./target-exporter/Dockerfile.dev",
-  live_update=[sync("target-exporter/build/target-exporter", "/app/build/target-exporter")],
+  live_update=[sync("./target-exporter/build/target-exporter", "/app/build/target-exporter"),
+  sync("./target-exporter/config-tilt.yaml", "/app/config-tilt.yaml")],
 #  only=[
-#  './target-exporter/build',
-#  './target-exporter/config-tilt.yaml',
+#    './target-exporter/build',
+#    './target-exporter/config-tilt.yaml',
 #  ]
 )
 
@@ -95,3 +99,23 @@ docker_build_with_restart('docker.io/cristianohelio/job-submission-platform',
         sync('job-submission-platform', '/app'),
         run('cd /app && yarn install', trigger=['./package.json', './yarn.lock']),
 ])
+
+# pyzhm
+
+docker_build('docker.io/cristianohelio/pyzhm',
+    context="pyzhm",
+    entrypoint="flask run --host 0.0.0.0 --port 5001",
+    dockerfile="./pyzhm/Dockerfile",
+)
+
+helm_resource("pyzhm",
+  "./pyzhm/charts/pyzhm",
+  namespace="pyzhm",
+  image_deps=["docker.io/cristianohelio/pyzhm"],
+  image_keys=[('image.repository', 'image.tag')],
+  flags=["--create-namespace"]
+)
+
+k8s_resource(
+  "pyzhm", port_forwards=5001
+)
