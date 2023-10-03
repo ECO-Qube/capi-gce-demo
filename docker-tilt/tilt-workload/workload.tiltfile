@@ -117,5 +117,5 @@ helm_resource("pyzhm",
 )
 
 k8s_resource(
-  "pyzhm", port_forwards=5001
+  "pyzhm", port_forwards=["5001:5001"]
 )

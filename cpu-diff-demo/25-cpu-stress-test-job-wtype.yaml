@@ -25,5 +25,5 @@ spec:
               cpu: 250m
       restartPolicy: Never
       nodeSelector:
-        ecoqube.eu/wkld-type: cpu
+        ecoqube.eu/hardware-type: cpu
   backoffLimit: 4
