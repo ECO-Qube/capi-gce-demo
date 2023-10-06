@@ -44,11 +44,47 @@ for i in range(0, len(node_names)):
   targetsList.update({node_names[i]: random_targets[i]})
 
 targets = {"targets": targetsList}
-targets = str(encode_yaml(targets))
-print(targetsList)
+print(str(encode_yaml(targets)))
+
+pyzhmNodeLabels = [
+    "L1",
+    "L3",
+    "L5",
+    "L7",
+    "L9",
+    "L11",
+    "L13",
+    "L15",
+    "L17",
+    "L19",
+    "L21",
+    "L23",
+    "R1",
+    "R3",
+    "R5",
+    "R7",
+    "R9",
+    "R11",
+    "R13",
+    "R15",
+    "R17",
+    "R19",
+    "R21",
+    "R23",
+]
+
+mappings = dict()
+
+for i in range(0, len(pyzhmNodeLabels)):
+  mappings[pyzhmNodeLabels[i]] = node_names[i % len(node_names)]
+
+print(mappings)
+
+pyzhmNodeMappings = { "pyzhmNodeMappings": mappings }
 
 local('echo "targetMetricName: fake_energy_target" > ./target-exporter/config-tilt.yaml')
-local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(targets))
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(targets))))
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(pyzhmNodeMappings))))
 local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
 target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
@@ -64,7 +100,7 @@ docker_build_with_restart("docker.io/cristianohelio/target-exporter",
 #    './target-exporter/config-tilt.yaml',
 #  ]
 )
-
+2
 # TODO: Eventually find out if helm_resource can be used with live reload in our setup
 helm_resource("target-exporter",
   "./target-exporter/charts/target-exporter",
