@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: 25-cpu-stresstest-start
+  namespace: default
+  annotations:
+    ecoqube.eu/start: "2023-10-19T12:47:00+00:00"
+spec:
+  suspend: true
+  template:
+    metadata:
+      labels:
+        app: 25-cpu-stresstest-start
+    spec:
+      containers:
+        - name: 25-cpu-stresstest-start
+          image: petarmaric/docker.cpu-stress-test
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MAX_CPU_CORES
+              value: '1'
+            - name: STRESS_SYSTEM_FOR
+              value: 1m
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 250m
+      restartPolicy: Never
+  backoffLimit: 4
