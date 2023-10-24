@@ -24,7 +24,7 @@ if not os.path.exists("pyzhm"):
 # Inject node names
 nodes_name_prefix = "{}-{}".format(consts.get("wkld_cluster_name"), consts.get("machinedeploy_name"))
 node_names = local_as_list("kubectl get nodes -o custom-columns=NAME:.metadata.name | grep {}".format(nodes_name_prefix))
-random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
+#random_targets = local_as_list("shuf -i 1-100 -n {}".format(len(node_names)))
 
 kubeconfig = "{}.kubeconfig".format(consts.get("wkld_cluster_name"))
 if not os.path.exists("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig") or str(read_file("../{}".format(kubeconfig))) != str(read_file("target-exporter/charts/target-exporter/ecoqube-dev.kubeconfig")):
@@ -41,7 +41,8 @@ local_resource(
 targets = dict()
 targetsList = dict()
 for i in range(0, len(node_names)):
-  targetsList.update({node_names[i]: random_targets[i]})
+#  targetsList.update({node_names[i]: random_targets[i]})
+   targetsList.update({node_names[i]: 50})
 
 targets = {"targets": targetsList}
 print(str(encode_yaml(targets)))
@@ -73,18 +74,68 @@ pyzhmNodeLabels = [
     "R23",
 ]
 
-mappings = dict()
+# Very hardcoded!!
+# IPs are BMC IP in EMPA DC, must be connected to VPN to test. IPs are taken at random from real cluster to simulate a real server for IPMI stuff.
+
+pyzhmMappings = dict()
 
 for i in range(0, len(pyzhmNodeLabels)):
-  mappings[pyzhmNodeLabels[i]] = node_names[i % len(node_names)]
+  pyzhmMappings[pyzhmNodeLabels[i]] = node_names[i % len(node_names)]
 
-print(mappings)
+print(pyzhmMappings)
 
-pyzhmNodeMappings = { "pyzhmNodeMappings": mappings }
+pyzhmNodeMappings = { "pyzhmNodeMappings": pyzhmMappings }
+
+bmcMappings = dict()
+
+ips = [
+    "192.168.10.53",
+    "192.168.10.57",
+    "192.168.10.59",
+    "192.168.10.72",
+    "192.168.10.65",
+    "192.168.10.64",
+    "192.168.10.62",
+    "192.168.10.68",
+    "192.168.10.71",
+    "192.168.10.66",
+    "192.168.10.61",
+    "192.168.10.70",
+    "192.168.10.69",
+    "192.168.10.60",
+    "192.168.10.63",
+    "192.168.10.52",
+    "192.168.10.96",
+    "192.168.10.45",
+    "192.168.10.44",
+    "192.168.10.46",
+    "192.168.10.48",
+    "192.168.10.55",
+    "192.168.10.56",
+    "192.168.10.51",
+    "192.168.10.54",
+    "192.168.10.40",
+    "192.168.10.49",
+    "192.168.10.47",
+    "192.168.10.43",
+    "192.168.10.42",
+]
+
+for i, node_name in enumerate(node_names):
+    bmcMappings[node_name] = ips[i]
+
+print(bmcMappings)
+
+bmcNodeMappings = { "bmcNodeMappings": bmcMappings }
+
+bmcCredentials = read_yaml("./bmc-credentials.yaml")
+bmcConfig = { "bmcUsername": bmcCredentials["username"], "bmcPassword": bmcCredentials["password"] }
 
 local('echo "targetMetricName: fake_energy_target" > ./target-exporter/config-tilt.yaml')
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(targets))))
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(pyzhmNodeMappings))))
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(bmcNodeMappings))))
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(bmcConfig))))
 local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
 target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
