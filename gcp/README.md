@@ -11,11 +11,11 @@ export CLUSTER_NAME="scheduling-dev"
 export GCP_PROJECT="k8s-ecoqube-development"
 # Make sure to use same kubernetes version here as building the GCE image
 export KUBERNETES_VERSION=1.22.9
-export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
-export GCP_NODE_MACHINE_TYPE=n1-standard-2
+export GCP_CONTROL_PLANE_MACHINE_TYPE=e2-small
+export GCP_NODE_MACHINE_TYPE=e2-small
 export GCP_NETWORK_NAME=default
 export GCP_PROJECT_ID="k8s-ecoqube-development"
-export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/capi-gce-demo/gcp/k8s-ecoqube-development-5a8303ddd7dd.json"
 ```
 
 Clone the repository
@@ -33,18 +33,21 @@ docker run -it --entrypoint /bin/bash image-builder
 ```
 
 You can modify the build configuration by modifying the file under `images/capi/packer/gce`, for example if you are
-building an ubuntu 2004 image, modify file `ubuntu-2004.json`, e.g.
+building an ubuntu 2004 image, modify file `ubuntu-2004.json` (note the extra lines regarding the version):
 
 ```json
 {
-  "build_name": "ubuntu-2004",
-  "distribution_release": "focal",
-  "distribution_version": "2004",
-  "zone": "europe-west6",
-  "kubernetes_deb_version": "1.25.0-00",
-  "kubernetes_rpm_version": "1.25.0-0",
-  "kubernetes_semver": "v1.25.0",
-  "kubernetes_series": "v1.25"
+  "build_name": "ubuntu-2204",
+  "distribution": "ubuntu",
+  "distribution_release": "jammy",
+  "distribution_version": "2204",
+  "source_image_family": "ubuntu-2204-lts",
+  "ssh_username": "ubuntu",
+  "zone": "europe-west6-a",
+  "kubernetes_deb_version": "1.27.7-1.1",
+  "kubernetes_rpm_version": "1.27.7",
+  "kubernetes_semver": "v1.27.7",
+  "kubernetes_series": "v1.27"
 }
 ```
 
@@ -63,19 +66,20 @@ Environment variables to set
 export GCP_REGION="europe-west6"
 export GCP_PROJECT="k8s-ecoqube-development"
 # Make sure to use same Kubernetes version here as the previously built GCE image
-export KUBERNETES_VERSION=1.25.0
-export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
-export GCP_NODE_MACHINE_TYPE=n1-standard-2
+export KUBERNETES_VERSION=1.27.7
+export GCP_CONTROL_PLANE_MACHINE_TYPE=e2-small
+export GCP_NODE_MACHINE_TYPE=e2-small
 export GCP_NETWORK_NAME=default
 export CLUSTER_NAME="scheduling-dev-mgmt"
-export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/criscola/IdeaProjects/helio/capi-gce-demo/gcp/k8s-ecoqube-development-5a8303ddd7dd.json"
 export GCP_PROJECT_ID="k8s-ecoqube-development"
 export GCP_PROJECT="k8s-ecoqube-development"
-export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/k8s-ecoqube-development-668c8628bd09.json | base64 | tr -d '\n' )
-export IMAGE_ID=projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-2004-v1-25-0-1662644962
+export GCP_B64ENCODED_CREDENTIALS=$( cat /home/criscola/IdeaProjects/helio/capi-gce-demo/gcp/k8s-ecoqube-development-5a8303ddd7dd.json | base64 | tr -d '\n' )
+export IMAGE_ID=projects/k8s-ecoqube-development/global/images/cluster-api-ubuntu-2204-v1-27-7-1702984275
 
 # Enable ClusterResourceSet experimental feature
 export EXP_CLUSTER_RESOURCE_SET=true
+export CLUSTER_TOPOLOGY=true
 ```
 
 Init local temporary bootstrap cluster
@@ -98,7 +102,7 @@ Generate Cluster API config (only for documentation purposes, see below note)
 
 ```bash
 clusterctl generate cluster scheduling-dev-mgmt \
-  --kubernetes-version v1.25.0 \
+  --kubernetes-version v1.27.7 \
   --control-plane-machine-count=1 \
   --worker-machine-count=1 \
   > scheduling-dev-mgmt.yaml
@@ -109,7 +113,7 @@ Next, add Calico's ConfigMap and the relative ClusterResourceSet resource to ins
 Apply config
 
 ```
-kubectl apply -f scheduling-dev-mgmt.yaml
+kubectl apply --server-side -f scheduling-dev-mgmt.yaml 
 ```
 
 Wait until the control plane is up and running using the following command:
@@ -117,12 +121,22 @@ Wait until the control plane is up and running using the following command:
 ```watch -n 1 kubectl get kubeadmcontrolplane```, then get kubeconfig:
 
 Note that both INITIALIZED API SERVER and API SERVER AVAILABLE must be true. Wait up to 10 minutes. Check also that worker nodes
-are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes`.
+are running on GCP through `kubectl --kubeconfig=./scheduling-dev-mgmt.kubeconfig get nodes`. Note that if the
+ClusterResourceSet resource didn't work, you can use the manual way:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
+```
 
 Next, get the cluster's kubeconfig:
 
 ```
 clusterctl get kubeconfig scheduling-dev-mgmt > scheduling-dev-mgmt.kubeconfig
+```
+
+Note that CRS are broken; according to the docs setting the experimental feature flag should be enough, but it's not.
+```bash
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
 ```
 
 #### Deploy management cluster on GCP (production setup)

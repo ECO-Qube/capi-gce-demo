@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "k8s-ecoqube-development",
+  "private_key_id": "be9b3c88d11f7c018552371382fadf1c89bec414",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC5jgZzm843jvAh\nTMnBi+iZa0jHiCq1y1o4Sh9MPSC+OcZE3yeqnl34A+yBYFcGpN2Yluy5IPDMDzG3\nVQAjktO4k7/yz9+sWc9znc/DWCLLAC6XCez136y6G8P5qbwYeNjPhkws9tefgUH8\n+ZLPWwXedZuRUgLRc7QV2NT6l3BJduK2fAPLMBp0j4f+bBD7mWYPcvtcCR9N32gQ\nHsPvb6dT9vjx+bHrRpN+U8JI/692GsWzFlNmXTK36JM2+c7c9kpo5XmYA1pTNfqi\nDka7npgCDGnYHVvMcI3+N3zwt8xA34/2DDrwYa1PHx5ndfhVsgQ6nKOH4/r5+uKD\nUuFsmJBvAgMBAAECggEAA0Sp/rMEm/ZcaqvqnaGBXG8kLilWmFXDF6KhIa0K3Lv3\ngFt/3FA9rng5Z7ENB1qcfR+AIc5xCvZYRshVFJzG8FbUaxXvOnv01t0SlMm8qshm\nz35SlHafsHBkqpaT+4KLk8sSWlFNb2iN1MNYwmZ9tXj2vHQ0BSP0tY8SpfzrT8xG\n48lR2tQKQxQS8kb49i0bHYKXzsDDTzhGvID4S630gFCxavsjYfoJgWOvII8F6YZz\n2yHrzlgSCB+j6A1zwn4Ha5Uz7GjqCpyWgLpe+UT7xhKRwZuTKrslcmzv1cfvBUqW\n4PtHZxltJ06M1bczro2/HPc/cLR9bE5tl8Xv4jivXQKBgQDnvyiA1J0OhVzLL+xD\nMhuVyd4ADwJT4Dv3x8Y9QGfY5NlBMg1QkH50yaFsiDC32GRC/4DPTDOH4Ed+iguy\nBCzUnvOOmKEVyeyKxEYJKl1igCjHAzvpoayEqxSHBO5BJtOJL/o+Kx+WxbqPK6q1\n+p2BFGgbF1CSmMB+QvYdXnFcTQKBgQDM+VDo4HC2ONBS8Q3EpCCc9JFAeo48SSri\nAv69wwuteHpy9ec9NbuQNgAYENYUo0mN30sIeU/XImFF8AS5nUl24g0LNfTh678x\n3DzR1XNCo+VjQ3kw0QIS9MGfs+P6i25EBL9Z4glEc/yQyZyOyqjNlq/AFfIG+YAN\nNcqHwfANqwKBgQDlXe1YlRZdKOGOuP++AfoLZqCyrig/m8++jZtHRFeD8/yS6lcD\nRf/i1y1Nnf2Z+DJDnV5/zYuzD+ey9i5dIoS8bBXjLG1Cg3f6YAhxSdzjgLTbQ/go\nZDu7kxfeCqNFGIiFX1bt8QBy2YCr8ywisMjy2J+xMIIulcDvNpcguji4gQKBgF7S\nn5l76uiBk+4q0cG8Y9H4WhHIIHDHMG1qEUrcJlTTvWHdXGI2r1Rhht2bPE5D080s\nFVwQMt1FbFacWLM9jjTPElWzWlwBYWvBhOlVo4Kaq42mMzRgHGOEkuY8pCTNx+7z\ne0orhToDpj2c5y4vlrO1GAz2mgab+Z8i2VTAZTsNAoGATjQKQYYsjcH8lSo+Ry7Q\n1mCSkhtJ1BT14uwUA5su3jWsyt0LLfOUT0c/96LK+cZRaIAFzbPma225d+g0Zmbv\ntkO9WqlFwPiCqbuNTuKUUlbGDf5m1jIGHBXaILaTip1FooOJZSem3awyJ3j4VG/9\nB9rmCvCeGzUwjCQmmmXWuto=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cc-dev@k8s-ecoqube-development.iam.gserviceaccount.com",
+  "client_id": "102465196683052715787",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cc-dev%40k8s-ecoqube-development.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
