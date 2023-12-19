@@ -197,7 +197,7 @@ Create a workload cluster:
 
 ```
 clusterctl generate cluster scheduling-dev-wkld \
-  --kubernetes-version v1.25.0 \
+  --kubernetes-version v1.27.7 \
   --control-plane-machine-count=1 \
   --worker-machine-count=3 \
   > scheduling-dev-wkld.yaml
