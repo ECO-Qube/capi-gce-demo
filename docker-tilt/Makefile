@@ -40,3 +40,4 @@ clean:
 	kubectl config unset clusters.kind-${CAPI_KIND_CLUSTER_NAME}
 	kubectl config unset users.kind-${CAPI_KIND_CLUSTER_NAME}
 	kubectl config unset contexts.kind-${CAPI_KIND_CLUSTER_NAME}-admin@kind-${CAPI_KIND_CLUSTER_NAME}
+	docker system prune

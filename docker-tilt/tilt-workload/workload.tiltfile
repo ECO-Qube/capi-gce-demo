@@ -78,19 +78,15 @@ pyzhmNodeLabels = [
 # IPs are BMC IP in EMPA DC, must be connected to VPN to test. IPs are taken at random from real cluster to simulate a real server for IPMI stuff.
 
 pyzhmMappings = dict()
-
 for i in range(0, len(pyzhmNodeLabels)):
   pyzhmMappings[pyzhmNodeLabels[i]] = node_names[i % len(node_names)]
-
 print(pyzhmMappings)
-
 pyzhmNodeMappings = { "pyzhmNodeMappings": pyzhmMappings }
-
 bmcMappings = dict()
-
 ips = [
     "192.168.10.53",
     "192.168.10.57",
+    "192.168.10.59",
     "192.168.10.59",
     "192.168.10.72",
     "192.168.10.65",
@@ -123,11 +119,8 @@ ips = [
 
 for i, node_name in enumerate(node_names):
     bmcMappings[node_name] = ips[i]
-
 print(bmcMappings)
-
 bmcNodeMappings = { "bmcNodeMappings": bmcMappings }
-
 bmcCredentials = read_yaml("./bmc-credentials.yaml")
 bmcConfig = { "bmcUsername": bmcCredentials["username"], "bmcPassword": bmcCredentials["password"] }
 
@@ -136,6 +129,7 @@ local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(t
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(pyzhmNodeMappings))))
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(bmcNodeMappings))))
 local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml(bmcConfig))))
+local('echo "{}" >> ./target-exporter/config-tilt.yaml'.format(str(encode_yaml({ "setpoints": [5, 50, 80, 100]}))))
 local("cp ../ecoqube-wkld-dev.kubeconfig ./target-exporter/")
 
 target_exporter_args = "--config=config-tilt.yaml --kubeconfig=/kubeconfig/ecoqube-dev.kubeconfig --debug=true --cors-disabled=true --promclient-address=http://prom-service.monitoring.svc.cluster.local:9090"
