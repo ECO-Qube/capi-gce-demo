@@ -71,14 +71,17 @@ spec:
       apiServer:
         extraArgs:
           cloud-provider: gce
+          feature-gates: "InPlacePodVerticalScaling=true"
         timeoutForControlPlane: 20m
       controllerManager:
         extraArgs:
           allocate-node-cidrs: "false"
           cloud-provider: gce
+          feature-gates: "InPlacePodVerticalScaling=true"
       scheduler:
         extraArgs:
           config: "/etc/kubernetes/schedulerconfig/scheduler-componentconfig.yaml"
+          feature-gates: "InPlacePodVerticalScaling=true"
         extraVolumes:
           - hostPath: "/etc/kubernetes/schedulerconfig"
             mountPath: "/etc/kubernetes/schedulerconfig"
@@ -95,6 +98,7 @@ spec:
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: gce
+          feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on control plane nodes 1/2
         name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
     joinConfiguration:
       patches:
@@ -102,6 +106,7 @@ spec:
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: gce
+          feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on control plane nodes 1/2
         name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
   machineTemplate:
     infrastructureRef:
@@ -170,6 +175,7 @@ spec:
         nodeRegistration:
           kubeletExtraArgs:
             cloud-provider: gce
+            feature-gates: "InPlacePodVerticalScaling=true" # enable InPlacePodVerticalScaling in kubelet on worker nodes
           name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
 --- # ConfigMaps for CRS
 apiVersion: v1
