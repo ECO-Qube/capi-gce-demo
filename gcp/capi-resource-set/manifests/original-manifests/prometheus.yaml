@@ -65,6 +65,8 @@ data:
       rules:
       - record: node_cpu_utilization
         expr: 100 - 100 * avg by (instance, job) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
+      - record: node_cpu_diff
+        expr: avg by (instance) (label_replace(fake_energy_target, "instance", "$1", "exported_instance", "(.*)")) - 100 + 100 * avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m]))
   prometheus.yml: |-
     global:
       scrape_interval: 5s
