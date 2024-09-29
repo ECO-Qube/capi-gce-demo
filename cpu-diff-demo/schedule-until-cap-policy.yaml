@@ -1,16 +1,3 @@
-apiVersion: telemetry.intel.com/v1alpha1
-kind: TASPolicy
-metadata:
-  name: schedule-until-at-capacity
-  namespace: default
-spec:
-  strategies:
-    dontschedule:
-      rules:
-        - metricname: node_schedulable
-          operator: Equals
-          target: 0
-    scheduleonmetric:
-      rules:
-        - metricname: node_schedulable
-          operator: GreaterThan
+version https://git-lfs.github.com/spec/v1
+oid sha256:81394ecfa0f36917984892b6e152d33be3c7c385076c4f488cbb8164b33f4437
+size 365

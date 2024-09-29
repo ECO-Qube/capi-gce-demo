@@ -1,32 +1,3 @@
-apiVersion: v1
-data:
-  prometheus-node-exporter.yaml: "---\n# Source: prometheus_node_exporter_helm_chart/templates/node-exporter-ds.yaml\napiVersion:
-    apps/v1\nkind: DaemonSet\nmetadata:\n  name: node-exporter \n  namespace: kube-system\n
-    \ labels:\n    k8s-app: node-exporter\n    kubernetes.io/cluster-service: \"true\"\n
-    \   addonmanager.kubernetes.io/mode: Reconcile\n    version: v0.15.2\nspec:\n
-    \ selector:\n    matchLabels:\n      k8s-app: node-exporter\n      version: v0.15.2\n
-    \ updateStrategy:\n    type: OnDelete\n  template:\n    metadata:\n      labels:\n
-    \       k8s-app: node-exporter\n        version: v0.15.2\n      annotations:\n
-    \       scheduler.alpha.kubernetes.io/critical-pod: ''\n    spec:\n      priorityClassName:
-    system-node-critical\n      containers:\n        - name: prometheus-node-exporter\n
-    \         image: prom/node-exporter:latest\n          imagePullPolicy: IfNotPresent\n
-    \         args:\n            - --path.procfs=/host/proc\n            - --path.sysfs=/host/sys\n
-    \           - --collector.textfile.directory=/host/node-metrics\n          ports:\n
-    \           - name: metrics\n              containerPort: 9100\n              hostPort:
-    9100\n          volumeMounts:\n            - name: proc\n              mountPath:
-    /host/proc\n              readOnly:  true\n            - name: sys\n              mountPath:
-    /host/sys\n              readOnly: true\n            - name: node-metrics\n              mountPath:
-    /host/node-metrics\n              readOnly: true\n      hostNetwork: true\n      hostPID:
-    true\n      volumes:\n        - name: proc\n          hostPath:\n            path:
-    /proc\n        - name: sys\n          hostPath:\n            path: /sys\n        -
-    name: node-metrics\n          hostPath:\n            path: /tmp/node-metrics\n---\n#
-    Source: prometheus_node_exporter_helm_chart/templates/node-exporter-service.yaml\napiVersion:
-    v1\nkind: Service\nmetadata:\n  name: node-exporter\n  namespace: kube-system\n
-    \ annotations:\n    prometheus.io/scrape: \"true\"\n  labels:\n    kubernetes.io/cluster-service:
-    \"true\"\n    addonmanager.kubernetes.io/mode: Reconcile\n    kubernetes.io/name:
-    \"NodeExporter\"\nspec:\n  clusterIP: None\n  ports:\n    - name: metrics\n      port:
-    9100\n      protocol: TCP\n      targetPort: 9100\n  selector:\n    k8s-app: node-exporter"
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: prometheus-node-exporter-configmap
+version https://git-lfs.github.com/spec/v1
+oid sha256:c93c3200e0df5179de50dd6a49e7bee32c51ba31fe7b6490b39e042642e91396
+size 2524

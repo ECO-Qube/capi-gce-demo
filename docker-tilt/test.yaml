@@ -1,19 +1,3 @@
-apiVersion: v1
-kind: Pod
-metadata:
-  name: cpu-stress-pod
-
-spec:
-  containers:
-    - name: cpu-stress-container
-      image: petarmaric/docker.cpu-stress-test
-      env:
-        - name: MAX_CPU_CORES
-          value: "12"
-        - name: STRESS_SYSTEM_FOR
-          value: "10m"
-      resources:
-        requests:
-          cpu: "500m"
-        limits:
-          cpu: "500m"
+version https://git-lfs.github.com/spec/v1
+oid sha256:5e76871f997613d49bf4ad5130e62204a54f5028c76d9248d1d82e67de1c23ca
+size 374

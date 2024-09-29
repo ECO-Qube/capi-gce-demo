@@ -1,6 +1,3 @@
-resources:
-- manifests.yaml
-- service_patch.yaml
-
-configurations:
-- kustomizeconfig.yaml
+version https://git-lfs.github.com/spec/v1
+oid sha256:2535e8b628f8ecfbe96a3a09566a7c6f71552a1718f9cc57cfe89140aad2c0b6
+size 88

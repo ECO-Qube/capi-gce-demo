@@ -1,22 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: controller-manager
-spec:
-  template:
-    spec:
-      containers:
-      - name: manager
-        ports:
-        - containerPort: 9443
-          name: webhook-server
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /tmp/k8s-webhook-server/serving-certs
-          name: cert
-          readOnly: true
-      volumes:
-      - name: cert
-        secret:
-          defaultMode: 420
-          secretName: bmo-webhook-server-cert
+version https://git-lfs.github.com/spec/v1
+oid sha256:eb58e7af887ad693fe7064ede843153a0788b7f104f23025c3dba2351eaddda1
+size 492

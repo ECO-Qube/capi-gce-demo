@@ -1,16 +1,3 @@
-#!/usr/bin/env bash
-
-set -u
-
-delete_bmh() {
-  name="${1:-host-0}"
-  # We do not care about deprovisioning here since we will anyway delete the VM.
-  # So to speed things up, we detach it before deleting.
-  kubectl annotate bmh "${name}" baremetalhost.metal3.io/detached=""
-  kubectl delete bmh "${name}"
-  kubectl -n vbmc exec deploy/vbmc -- vbmc delete "${name}"
-  virsh destroy --domain "${name}"
-  virsh undefine --domain "${name}" --remove-all-storage
-}
-
-delete_bmh "${1}"
+version https://git-lfs.github.com/spec/v1
+oid sha256:4249b2e3431c86b4438527480534fe413f0d3541f3a3307da197723e486682dc
+size 477

@@ -1,5 +1,3 @@
-resources:
-- certificate.yaml
-
-configurations:
-- kustomizeconfig.yaml
+version https://git-lfs.github.com/spec/v1
+oid sha256:03d3485012eb9644653ce0a2dccaa95395890f8d90e6cf99baed47b7daedb066
+size 70

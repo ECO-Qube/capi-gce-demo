@@ -1,16 +1,3 @@
-apiVersion: kustomize.config.k8s.io/v1alpha1
-kind: Component
-
-# You need to create these secrets in your overlay
-# secretGenerator:
-#   - name: ironic-credentials
-#     files:
-#     - username=ironic-username
-#     - password=ironic-password
-#   - name: ironic-inspector-credentials
-#     files:
-#     - username=ironic-inspector-username
-#     - password=ironic-inspector-password
-
-patchesStrategicMerge:
-- credentials_patch.yaml
+version https://git-lfs.github.com/spec/v1
+oid sha256:074cbb0fe678e2ed2bf115ceb4640c01416d7f8c195c64c24865a964511429c9
+size 431

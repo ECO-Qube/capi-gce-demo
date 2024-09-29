@@ -1,4 +1,3 @@
-[ironic]
-auth_type=http_basic
-username=${IRONIC_USERNAME}
-password=${IRONIC_PASSWORD}
+version https://git-lfs.github.com/spec/v1
+oid sha256:eff17529cc513d809f6e451ee0da6326fbae0dac09abb3c96e31ab16bac82c66
+size 85

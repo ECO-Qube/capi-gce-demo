@@ -1,8 +1,3 @@
-.idea/
-ubuntu-2004-kube-v1.25.0
-*-openrc.sh
-clouds.yaml
-docker-tilt/tilt-workload/
-!docker-tilt/tilt-workload/workload.tiltfile
-docker-tilt/ecoqube-wkld-dev.kubeconfig
-docker/ecoqube-dev-cluster.yaml
+version https://git-lfs.github.com/spec/v1
+oid sha256:98ad1dae449f5b569d991fad4234fd74412bb95545a8d98419257c333df9b69d
+size 200

@@ -1,27 +1,3 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: 25-cpu-stresstest-cron
-  namespace: default
-spec:
-  template:
-    metadata:
-      labels:
-        app: 25-cpu-stresstest-cron
-    spec:
-      containers:
-        - name: 25-cpu-stresstest-cron
-          image: petarmaric/docker.cpu-stress-test
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: MAX_CPU_CORES
-              value: '1'
-            - name: STRESS_SYSTEM_FOR
-              value: 1m
-          resources:
-            requests:
-              cpu: 250m
-            limits:
-              cpu: 250m
-      restartPolicy: Never
-  backoffLimit: 4
+version https://git-lfs.github.com/spec/v1
+oid sha256:ec4ba014b615df65d62499df0b87cf82fd32dd1f83c932a9cfdcf662752958a7
+size 624

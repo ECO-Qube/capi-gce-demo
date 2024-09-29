@@ -1,11 +1,3 @@
-apiVersion: kustomize.config.k8s.io/v1alpha1
-kind: Component
-
-resources:
-- certificate.yaml
-
-patchesStrategicMerge:
-- tls.yaml
-
-configurations:
-- kustomizeconfig.yaml
+version https://git-lfs.github.com/spec/v1
+oid sha256:98e6fc3c0de3cb25041a86d98a17b18413c239f8014a5c1cd5c40edd9cc4da42
+size 167

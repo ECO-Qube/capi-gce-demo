@@ -1,21 +1,3 @@
-apiVersion: telemetry.intel.com/v1alpha1
-kind: TASPolicy
-metadata:
-  name: cpu-diff-policy
-  namespace: default
-spec:
-  strategies:
-    deschedule:
-      rules:
-      - metricname: diff
-        operator: LessThan
-        target: 0
-    dontschedule:
-      rules:
-      - metricname: diff
-        operator: LessThan
-        target: 20
-    scheduleonmetric:
-      rules:
-      - metricname: diff
-        operator: GreaterThan
+version https://git-lfs.github.com/spec/v1
+oid sha256:ddc7f1c94d47fbd144d1719090777c37e20b042488cf7756a95b97b1a3f40b37
+size 422

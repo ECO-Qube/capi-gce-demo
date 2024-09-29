@@ -1,16 +1,3 @@
-# This configuration is for teaching kustomize how to update name ref and var substitution 
-nameReference:
-- kind: Issuer
-  group: cert-manager.io
-  fieldSpecs:
-  - kind: Certificate
-    group: cert-manager.io
-    path: spec/issuerRef/name
-
-varReference:
-- kind: Certificate
-  group: cert-manager.io
-  path: spec/commonName
-- kind: Certificate
-  group: cert-manager.io
-  path: spec/dnsNames
+version https://git-lfs.github.com/spec/v1
+oid sha256:2c9f4e5998b01120d8518f80dc468fc76fbaf8885e76c6d20d6fbc11f61ff5b1
+size 391

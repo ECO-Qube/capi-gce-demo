@@ -1,4 +1,3 @@
-[inspector]
-auth_type=http_basic
-username=${IRONIC_INSPECTOR_USERNAME}
-password=${IRONIC_INSPECTOR_PASSWORD}
+version https://git-lfs.github.com/spec/v1
+oid sha256:5f4691ff237389b60ff9c4e7bb26cc73162fe421876a39b57a4cea8487c3bc4e
+size 108

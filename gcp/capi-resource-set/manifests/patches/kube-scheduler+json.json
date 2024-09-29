@@ -1,7 +1,3 @@
-[
-  {
-    "op": "add",
-    "path": "/spec/dnsPolicy",
-    "value": "ClusterFirstWithHostNet"
-  }
-]
+version https://git-lfs.github.com/spec/v1
+oid sha256:77d822aeed8699b31ab6dd2bab84e47b6411acde788c77f924b75de1e01b768f
+size 98

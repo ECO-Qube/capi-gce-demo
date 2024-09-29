@@ -1,24 +1,3 @@
-apiVersion: telemetry.intel.com/v1alpha1
-kind: TASPolicy
-metadata:
-  name: demo-policy
-  namespace: default
-spec:
-  strategies:
-    deschedule:
-      rules:
-        - metricname: health_metric
-          operator: Equals
-          target: 2
-    dontschedule:
-      rules:
-        - metricname: health_metric
-          operator: Equals
-          target: 1
-        - metricname: health_metric
-          operator: Equals
-          target: 2
-    scheduleonmetric:
-      rules:
-        - metricname: health_metric
-          operator: LessThan
+version https://git-lfs.github.com/spec/v1
+oid sha256:914b171ad4cded9a6ddb3f4148a0a49a6bd78cc13f8b1294132e253dc42acffa
+size 536

@@ -1,11 +1,3 @@
-default_registry: kind-registry:5000
-enable_providers:
-  - docker
-  - kubeadm-bootstrap
-  - kubeadm-control-plane
-kustomize_substitutions:
-  CLUSTER_TOPOLOGY: "true"
-  EXP_CLUSTER_RESOURCE_SET: "true"
-template_dirs:
-  docker:
-    - ./templates/capd
+version https://git-lfs.github.com/spec/v1
+oid sha256:09203c9818c3f4e2be0274a51f3ee148181251634087f3d662f788f53f141341
+size 249

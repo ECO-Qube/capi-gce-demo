@@ -1,17 +1,3 @@
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: proxy-role
-rules:
-- apiGroups:
-  - authentication.k8s.io
-  resources:
-  - tokenreviews
-  verbs:
-  - create
-- apiGroups:
-  - authorization.k8s.io
-  resources:
-  - subjectaccessreviews
-  verbs:
-  - create
+version https://git-lfs.github.com/spec/v1
+oid sha256:711c647635220035fa64424ea9f0398be7d02de1480c2122f108a53254d33dfe
+size 280

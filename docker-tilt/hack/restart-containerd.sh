@@ -1,15 +1,3 @@
-#!/usr/bin/env bash
-
-# This script restarts containerd for each node (Docker container) reachable through the current cluster connection.
-
-set -o errexit
-set -o nounset
-set -o pipefail
-
-if [[ "${TRACE-0}" == "1" ]]; then
-    set -o xtrace
-fi
-
-for node in $(kubectl get nodes -o custom-columns=:.metadata.name); do
-  echo "restarting containerd for node $node ..."
-  docker exec "$node" systemctl restart containerd; done
+version https://git-lfs.github.com/spec/v1
+oid sha256:8f8869c7b5e414a113a1dae96bfdd23502c8e23226681f15f580c72ebe14cda1
+size 420

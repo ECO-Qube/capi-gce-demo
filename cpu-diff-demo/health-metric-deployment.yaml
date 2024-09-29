@@ -1,33 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo-app
-  labels:
-    app: demo
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: demo
-  template:
-    metadata:
-      labels:
-        app: demo
-        telemetry-policy: demo-policy
-    spec:
-      containers:
-        - name: nginx
-          image: nginx:latest
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              telemetry/scheduling: 1
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: scheduling-policy
-                    operator: NotIn
-                    values:
-                      - violating
+version https://git-lfs.github.com/spec/v1
+oid sha256:8cd523f47e0aa9f0d5e31d5caf970e93cea70ae253b54fd6e34bfc1682ec4e7a
+size 750

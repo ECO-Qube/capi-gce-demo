@@ -1,16 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ironic
-spec:
-  template:
-    spec:
-      containers:
-        - name: ironic-dnsmasq
-          $patch: delete
-      volumes:
-        - name: ironic-data-volume
-          emptyDir:
-            $patch: delete
-          hostPath:
-            path: /opt/minikube
+version https://git-lfs.github.com/spec/v1
+oid sha256:f5c5ec5768e652e4b4766b3ddfc5827d866bca7f79090a257b82b618fcb6ba40
+size 313
